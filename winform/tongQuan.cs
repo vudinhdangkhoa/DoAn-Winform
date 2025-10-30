@@ -48,7 +48,7 @@ namespace winform
             }
 
             GetSoLuongHocVienMoiTrong6Thang();
-
+            GetLopHocItem();
         }
 
         private async void GetSoLuongHocVienMoiTrong6Thang()
@@ -67,7 +67,10 @@ namespace winform
                         chart_HocVienMoi.Titles.Add("Số lượng học viên mới trong 6 tháng gần nhất");
                         foreach (var item in data)
                         {
-                            chart_HocVienMoi.Series["HocVienMoi"].Points.AddXY(item.month, item.count);
+                            string month = item.month.ToString();
+                            int count = (int)item.count;
+
+                            chart_HocVienMoi.Series["HocVienMoi"].Points.AddXY(month, count);
                         }
                     });
                 }
@@ -92,8 +95,15 @@ namespace winform
                         flpLopHocSapKhaiGiang.Controls.Clear();
                         foreach(var lop in data)
                         {
-                            var item = new LopHocItem(lop.tenLopHoc,lop.khoaHoc, lop.giaoVien,lop.soLuongHv,lop.SoLuongToiDa);
+                            string tenLopHoc = Convert.ToString(lop.tenLopHoc) ?? "N/A";
+                            string khoaHoc = Convert.ToString(lop.khoaHoc) ?? "N/A";
+                            string giaoVien = Convert.ToString(lop.giaoVien) ?? "N/A";
+                            int soLuongHv = Convert.ToInt32(lop.soLuongHv);
+                            int soLuongToiDa = Convert.ToInt32(lop.soLuongToiDa);
+
+                            var item = new LopHocItem(tenLopHoc, khoaHoc, giaoVien, soLuongHv, soLuongToiDa);
                             flpLopHocSapKhaiGiang.Controls.Add(item);
+
                         }
                     });
                 }

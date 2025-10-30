@@ -33,7 +33,7 @@ namespace winform
                         dgv_DanhSachHV.Rows.Clear();
                         foreach (var hv in dataHocVien)
                         {
-                            dgv_DanhSachHV.Rows.Add(hv.tenHV, hv.ngaySinh.ToString("dd/MM/yyyy"), hv.phuHuynh);
+                            dgv_DanhSachHV.Rows.Add(hv.tenHv, hv.ngaySinh.ToString("dd/MM/yyyy"),hv.gioiTinh, hv.phuHuynh);
                         }
                     }
                     catch (Exception ex)

@@ -16,14 +16,14 @@ namespace winform
         {
             InitializeComponent();
         }
-        public LopHocItem(string tenLop,string tenKH,string giaoVien, int soHocVien, int SLToiDa)
+        public LopHocItem(string tenLop, string tenKH, string giaoVien, int soHocVien, int SLToiDa)
         {
             InitializeComponent();
-            lblTenLop.Text += tenLop+ "Khóa: "+ tenKH;
-            lblTenGV.Text+= giaoVien;
-            lblSiSo.Text += soHocVien.ToString() + "/" + SLToiDa.ToString();
-            progressBar1.Value = (int)((soHocVien / (float)SLToiDa) * 100);
-            progressBar1.Maximum = SLToiDa;
+            lblTenLop.Text = tenLop ;
+            lblTenGV.Text +=" " + giaoVien;
+            lblSiSo.Text ="Sỉ Số"+ soHocVien.ToString() + "/" + SLToiDa.ToString();
+            
+            
         }
     }
 }
