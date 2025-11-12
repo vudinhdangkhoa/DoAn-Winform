@@ -11,8 +11,8 @@ namespace winform
 {
     internal class DungChung
     {
-        //public static string BaseUrl = "http://localhost:5225/api/";
-        public static string BaseUrl = "https://2gcqx76s-5225.asse.devtunnels.ms/api/";
+        public static string BaseUrl = "http://localhost:5225/api/";
+        //public static string BaseUrl = "https://2gcqx76s-5225.asse.devtunnels.ms/api/";
         public static string getUrl(string url)=> BaseUrl + url;
 
         public static async Task<dynamic> GetDataTongQuan(string url)
@@ -140,6 +140,7 @@ namespace winform
             }
         }
 
+        
         public static async Task<dynamic> GetHocVien()
         {
             try

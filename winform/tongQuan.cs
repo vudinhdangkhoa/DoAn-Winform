@@ -97,7 +97,21 @@ namespace winform
                         {
                             string tenLopHoc = Convert.ToString(lop.tenLopHoc) ?? "N/A";
                             string khoaHoc = Convert.ToString(lop.khoaHoc) ?? "N/A";
-                            string giaoVien = Convert.ToString(lop.giaoVien) ?? "N/A";
+                            string giaoVien = "N/A";
+                            if (lop.giaoVien != null)
+                            {
+                                try
+                                {
+                                    // Nếu giaoVien là mảng, nối các phần tử bằng dấu phẩy
+                                    var giaoVienArray = ((Newtonsoft.Json.Linq.JArray)lop.giaoVien).ToObject<string[]>();
+                                    giaoVien = string.Join(", ", giaoVienArray);
+                                }
+                                catch
+                                {
+                                    // Fallback nếu không parse được
+                                    giaoVien = Convert.ToString(lop.giaoVien) ?? "N/A";
+                                }
+                            }
                             int soLuongHv = Convert.ToInt32(lop.soLuongHv);
                             int soLuongToiDa = Convert.ToInt32(lop.soLuongToiDa);
 
