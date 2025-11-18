@@ -118,6 +118,7 @@
             this.btn_ThemHocVien.TabIndex = 1;
             this.btn_ThemHocVien.Text = "➕ Thêm";
             this.btn_ThemHocVien.UseVisualStyleBackColor = false;
+            this.btn_ThemHocVien.Click += new System.EventHandler(this.btn_ThemHocVien_Click);
             // 
             // tableLayoutPanel5
             // 

@@ -71,7 +71,14 @@
     <Compile Include="Dashboard.Designer.cs">
       <DependentUpon>Dashboard.cs</DependentUpon>
     </Compile>
+    <Compile Include="DTO.cs" />
     <Compile Include="DungChung.cs" />
+    <Compile Include="frmThemHocVien.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmThemHocVien.Designer.cs">
+      <DependentUpon>frmThemHocVien.cs</DependentUpon>
+    </Compile>
     <Compile Include="LopHocItem.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -85,6 +92,12 @@
     </Compile>
     <Compile Include="tongQuan.Designer.cs">
       <DependentUpon>tongQuan.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucItemHocVien.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucItemHocVien.Designer.cs">
+      <DependentUpon>ucItemHocVien.cs</DependentUpon>
     </Compile>
     <Compile Include="ucKhoaHoc.cs">
       <SubType>UserControl</SubType>
@@ -119,6 +132,9 @@
     </Compile>
     <EmbeddedResource Include="tongQuan.resx">
       <DependentUpon>tongQuan.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucItemHocVien.resx">
+      <DependentUpon>ucItemHocVien.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ucKhoaHoc.resx">
       <DependentUpon>ucKhoaHoc.cs</DependentUpon>

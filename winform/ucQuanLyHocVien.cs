@@ -220,5 +220,19 @@ namespace winform
                 }
             });
         }
+
+        private void btn_ThemHocVien_Click(object sender, EventArgs e)
+        {
+          
+            // Mở form dạng Dialog
+            frmThemHocVien frm = new frmThemHocVien();
+
+            if (frm.ShowDialog() == DialogResult.OK)
+            {
+                // Load lại bảng dữ liệu danh sách học viên
+                LoadData();
+            }
+        
+        }
     }
 }
