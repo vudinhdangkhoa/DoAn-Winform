@@ -27,7 +27,7 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
-{
+    {
             this.tblMain = new System.Windows.Forms.TableLayoutPanel();
             this.txtTenHV = new Guna.UI2.WinForms.Guna2TextBox();
             this.dtpNgaySinh = new Guna.UI2.WinForms.Guna2DateTimePicker();
@@ -36,6 +36,7 @@
             this.cboLopHoc = new Guna.UI2.WinForms.Guna2ComboBox();
             this.btnThemLop = new Guna.UI2.WinForms.Guna2Button();
             this.txtLopDaChon = new Guna.UI2.WinForms.Guna2TextBox();
+            this.txtTongTien = new Guna.UI2.WinForms.Guna2TextBox();
             this.btnResetLop = new Guna.UI2.WinForms.Guna2Button();
             this.tblMain.SuspendLayout();
             this.SuspendLayout();
@@ -44,11 +45,11 @@
             // 
             this.tblMain.BackColor = System.Drawing.Color.Black;
             this.tblMain.ColumnCount = 5;
-            this.tblMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 35F));
+            this.tblMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
             this.tblMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 45F));
-            this.tblMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.tblMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 35F));
             this.tblMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tblMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
+            this.tblMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
             this.tblMain.Controls.Add(this.txtTenHV, 0, 0);
             this.tblMain.Controls.Add(this.dtpNgaySinh, 2, 0);
             this.tblMain.Controls.Add(this.cboGioiTinh, 3, 0);
@@ -56,6 +57,7 @@
             this.tblMain.Controls.Add(this.cboLopHoc, 0, 1);
             this.tblMain.Controls.Add(this.btnThemLop, 1, 1);
             this.tblMain.Controls.Add(this.txtLopDaChon, 2, 1);
+            this.tblMain.Controls.Add(this.txtTongTien, 3, 1);
             this.tblMain.Controls.Add(this.btnResetLop, 4, 1);
             this.tblMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tblMain.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -81,7 +83,7 @@
             this.txtTenHV.Name = "txtTenHV";
             this.txtTenHV.PlaceholderText = "Họ tên học viên";
             this.txtTenHV.SelectedText = "";
-            this.txtTenHV.Size = new System.Drawing.Size(282, 44);
+            this.txtTenHV.Size = new System.Drawing.Size(262, 44);
             this.txtTenHV.TabIndex = 0;
             // 
             // dtpNgaySinh
@@ -93,11 +95,11 @@
             this.dtpNgaySinh.FillColor = System.Drawing.Color.White;
             this.dtpNgaySinh.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.dtpNgaySinh.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpNgaySinh.Location = new System.Drawing.Point(296, 8);
+            this.dtpNgaySinh.Location = new System.Drawing.Point(276, 8);
             this.dtpNgaySinh.MaxDate = new System.DateTime(9998, 12, 31, 0, 0, 0, 0);
             this.dtpNgaySinh.MinDate = new System.DateTime(1753, 1, 1, 0, 0, 0, 0);
             this.dtpNgaySinh.Name = "dtpNgaySinh";
-            this.dtpNgaySinh.Size = new System.Drawing.Size(272, 44);
+            this.dtpNgaySinh.Size = new System.Drawing.Size(254, 44);
             this.dtpNgaySinh.TabIndex = 1;
             this.dtpNgaySinh.Value = new System.DateTime(2023, 11, 18, 0, 0, 0, 0);
             // 
@@ -116,9 +118,9 @@
             this.cboGioiTinh.Items.AddRange(new object[] {
             "Nam",
             "Nữ"});
-            this.cboGioiTinh.Location = new System.Drawing.Point(574, 8);
+            this.cboGioiTinh.Location = new System.Drawing.Point(536, 8);
             this.cboGioiTinh.Name = "cboGioiTinh";
-            this.cboGioiTinh.Size = new System.Drawing.Size(167, 36);
+            this.cboGioiTinh.Size = new System.Drawing.Size(180, 36);
             this.cboGioiTinh.StartIndex = 0;
             this.cboGioiTinh.TabIndex = 2;
             // 
@@ -129,11 +131,12 @@
             this.btnXoaHV.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
             this.btnXoaHV.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnXoaHV.ForeColor = System.Drawing.Color.White;
-            this.btnXoaHV.Location = new System.Drawing.Point(747, 8);
+            this.btnXoaHV.Location = new System.Drawing.Point(722, 8);
             this.btnXoaHV.Name = "btnXoaHV";
-            this.btnXoaHV.Size = new System.Drawing.Size(45, 44);
+            this.btnXoaHV.Size = new System.Drawing.Size(70, 44);
             this.btnXoaHV.TabIndex = 3;
             this.btnXoaHV.Text = "X";
+            this.btnXoaHV.Click += new System.EventHandler(this.BtnXoaHV_Click);
             // 
             // cboLopHoc
             // 
@@ -149,7 +152,7 @@
             this.cboLopHoc.ItemHeight = 30;
             this.cboLopHoc.Location = new System.Drawing.Point(8, 58);
             this.cboLopHoc.Name = "cboLopHoc";
-            this.cboLopHoc.Size = new System.Drawing.Size(237, 36);
+            this.cboLopHoc.Size = new System.Drawing.Size(217, 36);
             this.cboLopHoc.TabIndex = 4;
             // 
             // btnThemLop
@@ -159,23 +162,23 @@
             this.btnThemLop.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
             this.btnThemLop.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnThemLop.ForeColor = System.Drawing.Color.White;
-            this.btnThemLop.Location = new System.Drawing.Point(251, 58);
+            this.btnThemLop.Location = new System.Drawing.Point(231, 58);
             this.btnThemLop.Name = "btnThemLop";
             this.btnThemLop.Size = new System.Drawing.Size(39, 36);
             this.btnThemLop.TabIndex = 5;
             this.btnThemLop.Text = "+";
+            this.btnThemLop.Click += new System.EventHandler(this.BtnThemLop_Click);
             // 
             // txtLopDaChon
             // 
             this.txtLopDaChon.BorderRadius = 5;
-            this.tblMain.SetColumnSpan(this.txtLopDaChon, 2);
             this.txtLopDaChon.Cursor = System.Windows.Forms.Cursors.No;
             this.txtLopDaChon.DefaultText = "";
             this.txtLopDaChon.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtLopDaChon.FillColor = System.Drawing.Color.WhiteSmoke;
             this.txtLopDaChon.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtLopDaChon.ForeColor = System.Drawing.Color.Black;
-            this.txtLopDaChon.Location = new System.Drawing.Point(296, 58);
+            this.txtLopDaChon.Location = new System.Drawing.Point(276, 58);
             this.txtLopDaChon.Multiline = true;
             this.txtLopDaChon.Name = "txtLopDaChon";
             this.txtLopDaChon.PlaceholderForeColor = System.Drawing.Color.Black;
@@ -183,21 +186,40 @@
             this.txtLopDaChon.ReadOnly = true;
             this.txtLopDaChon.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtLopDaChon.SelectedText = "";
-            this.txtLopDaChon.Size = new System.Drawing.Size(445, 54);
+            this.txtLopDaChon.Size = new System.Drawing.Size(254, 54);
             this.txtLopDaChon.TabIndex = 6;
+            // 
+            // txtTongTien
+            // 
+            this.txtTongTien.BorderRadius = 5;
+            this.txtTongTien.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.txtTongTien.DefaultText = "";
+            this.txtTongTien.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtTongTien.FillColor = System.Drawing.Color.WhiteSmoke;
+            this.txtTongTien.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.txtTongTien.ForeColor = System.Drawing.Color.Red;
+            this.txtTongTien.Location = new System.Drawing.Point(536, 58);
+            this.txtTongTien.Name = "txtTongTien";
+            this.txtTongTien.PlaceholderText = "0 đ";
+            this.txtTongTien.ReadOnly = true;
+            this.txtTongTien.SelectedText = "";
+            this.txtTongTien.Size = new System.Drawing.Size(180, 54);
+            this.txtTongTien.TabIndex = 7;
+            this.txtTongTien.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // btnResetLop
             // 
             this.btnResetLop.BorderRadius = 5;
-            this.btnResetLop.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnResetLop.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnResetLop.FillColor = System.Drawing.Color.Gray;
             this.btnResetLop.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnResetLop.ForeColor = System.Drawing.Color.White;
-            this.btnResetLop.Location = new System.Drawing.Point(747, 58);
+            this.btnResetLop.Location = new System.Drawing.Point(722, 58);
             this.btnResetLop.Name = "btnResetLop";
-            this.btnResetLop.Size = new System.Drawing.Size(45, 36);
+            this.btnResetLop.Size = new System.Drawing.Size(70, 54);
             this.btnResetLop.TabIndex = 7;
             this.btnResetLop.Text = "↺";
+            this.btnResetLop.Click += new System.EventHandler(this.BtnResetLop_Click);
             // 
             // ucItemHocVien
             // 
@@ -210,19 +232,20 @@
             this.tblMain.ResumeLayout(false);
             this.ResumeLayout(false);
 
-}
+        }
 
-#endregion
+        #endregion
 
-// Khai báo biến ở cuối file Designer
-private System.Windows.Forms.TableLayoutPanel tblMain;
-private Guna.UI2.WinForms.Guna2TextBox txtTenHV;
-private Guna.UI2.WinForms.Guna2DateTimePicker dtpNgaySinh;
-private Guna.UI2.WinForms.Guna2ComboBox cboGioiTinh;
-private Guna.UI2.WinForms.Guna2Button btnXoaHV;
-private Guna.UI2.WinForms.Guna2ComboBox cboLopHoc;
-private Guna.UI2.WinForms.Guna2Button btnThemLop;
-private Guna.UI2.WinForms.Guna2TextBox txtLopDaChon;
-private Guna.UI2.WinForms.Guna2Button btnResetLop;
+        // Khai báo biến ở cuối file Designer
+        private System.Windows.Forms.TableLayoutPanel tblMain;
+        private Guna.UI2.WinForms.Guna2TextBox txtTenHV;
+        private Guna.UI2.WinForms.Guna2DateTimePicker dtpNgaySinh;
+        private Guna.UI2.WinForms.Guna2ComboBox cboGioiTinh;
+        private Guna.UI2.WinForms.Guna2Button btnXoaHV;
+        private Guna.UI2.WinForms.Guna2ComboBox cboLopHoc;
+        private Guna.UI2.WinForms.Guna2Button btnThemLop;
+        private Guna.UI2.WinForms.Guna2TextBox txtLopDaChon;
+        private Guna.UI2.WinForms.Guna2Button btnResetLop;
+        private Guna.UI2.WinForms.Guna2TextBox txtTongTien;
     }
 }

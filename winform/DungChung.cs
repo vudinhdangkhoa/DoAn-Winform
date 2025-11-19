@@ -1,18 +1,20 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net.Http;
-using System.Windows.Forms;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace winform
 {
     internal class DungChung
     {
-        public static string BaseUrl = "http://localhost:5225/api/";
-        //public static string BaseUrl = "https://2gcqx76s-5225.asse.devtunnels.ms/api/";
+        //public static string BaseUrl = "http://localhost:5225/api/";
+        public static string BaseUrl = "https://2gcqx76s-5225.asse.devtunnels.ms/api/";
         public static string getUrl(string url)=> BaseUrl + url;
 
         public static async Task<dynamic> GetDataTongQuan(string url)
@@ -115,6 +117,27 @@ namespace winform
         }
     }
 
+    public class Helper
+    {
+        public static bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return false;
+
+            // Pattern regex cho email chuẩn
+            string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            return Regex.IsMatch(email, pattern);
+        }
+
+        public static bool IsValidPhoneNumber(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone)) return false;
+
+            // Pattern: Bắt đầu bằng số 0, theo sau là 9 chữ số bất kỳ
+            string pattern = @"^0\d{9}$";
+            return Regex.IsMatch(phone, pattern);
+        }
+    }
+
     public class UCQuanLyHocVien
     {
         
@@ -160,6 +183,44 @@ namespace winform
                 // Xử lý lỗi không kết nối được tới server
                 MessageBox.Show($"Không thể kết nối tới máy chủ: {e.Message}");
                 return null;
+            }
+        }
+
+        public static async Task<dynamic> AddHocVien(AddHocVienRequest data)
+        {
+            try
+            {
+
+                using (HttpClient client = new HttpClient())
+                {
+                    var json = JsonConvert.SerializeObject(data);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    HttpResponseMessage response = await client.PostAsync(DungChung.getUrl("QLHocVien/AddHocVien"), content); // Endpoint
+                   
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var message = await response.Content.ReadAsStringAsync();
+                       
+                        return Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(message);
+                    }
+                    Console.WriteLine("Status code AddHocVien: " + response.StatusCode);
+
+                    // Hoặc xem nội dung lỗi chi tiết từ Server trả về:
+                    string errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("Nội dung lỗi: " + errorContent);
+                    MessageBox.Show($"Lỗi: {response.StatusCode}\nChi tiết: {errorContent}");
+                    return null;
+                }
+
+            }
+            catch (HttpRequestException e)
+            {
+                // Xử lý lỗi không kết nối được tới server
+                MessageBox.Show($"Không thể kết nối tới máy chủ: {e.Message}");
+                {
+                    return null;
+                }
             }
         }
     }

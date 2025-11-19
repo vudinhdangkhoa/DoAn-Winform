@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ClosedXML.Excel;
+using System.IO;
 
 namespace winform
 {
@@ -234,5 +236,76 @@ namespace winform
             }
         
         }
+
+        private void btn_XuatExcel_Click(object sender, EventArgs e)
+        {
+            if (dgv_DanhSachHV.Rows.Count == 0)
+            {
+                MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // 2. Mở hộp thoại chọn nơi lưu file
+            using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xlsx", FileName = "DanhSachHocVien.xlsx" })
+            {
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        // 3. Gọi hàm xuất Excel
+                        XuatRaExcel(dgv_DanhSachHV, sfd.FileName);
+                        MessageBox.Show("Xuất file Excel thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Lỗi khi xuất file: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        private void XuatRaExcel(DataGridView dgv, string filePath)
+        {
+            // Tạo một Workbook mới
+            using (var workbook = new XLWorkbook())
+            {
+                // Tạo một Worksheet
+                var worksheet = workbook.Worksheets.Add("DanhSachHocVien");
+
+                // --- 1. XỬ LÝ TIÊU ĐỀ CỘT ---
+                for (int i = 0; i < dgv.Columns.Count; i++)
+                {
+                    // Dòng 1 là tiêu đề. Excel bắt đầu từ dòng 1, cột 1 (không phải 0)
+                    worksheet.Cell(1, i + 1).Value = dgv.Columns[i].HeaderText;
+
+                    // Tô đậm và chỉnh màu nền cho tiêu đề đẹp hơn
+                    var headerCell = worksheet.Cell(1, i + 1);
+                    headerCell.Style.Font.Bold = true;
+                    headerCell.Style.Fill.BackgroundColor = XLColor.CornflowerBlue;
+                    headerCell.Style.Font.FontColor = XLColor.White;
+                }
+
+                // --- 2. XỬ LÝ DỮ LIỆU DÒNG ---
+                for (int i = 0; i < dgv.Rows.Count; i++)
+                {
+                    for (int j = 0; j < dgv.Columns.Count; j++)
+                    {
+                        // Kiểm tra null để tránh lỗi
+                        var cellValue = dgv.Rows[i].Cells[j].Value;
+                        string valueStr = cellValue != null ? cellValue.ToString() : "";
+
+                        // Ghi dữ liệu vào Excel (Dòng bắt đầu từ 2 vì dòng 1 là Header)
+                        worksheet.Cell(i + 2, j + 1).Value = valueStr;
+                    }
+                }
+
+                // --- 3. TỰ ĐỘNG CĂN CHỈNH ĐỘ RỘNG CỘT ---
+                worksheet.Columns().AdjustToContents();
+
+                // --- 4. LƯU FILE ---
+                workbook.SaveAs(filePath);
+            }
+        }
+
     }
 }

@@ -16,16 +16,24 @@ namespace winform
         {
             InitializeComponent();
         }
+
         public event EventHandler OnDeleteRequest;
+
         private List<int> _selectedLopIds = new List<int>(); // Lưu ID các lớp đã chọn
-       
+        
+        // Biến lưu tổng tiền hiện tại của học viên này
+        private decimal _currentTotalMoney = 0;
+
         public void LoadDanhSachLop(List<LopHocSimpleDTO> dsLop)
         {
-            cboLopHoc.DataSource = null; // Reset binding
+            if (dsLop == null) return;
+            cboLopHoc.DataSource = null;
             cboLopHoc.DataSource = dsLop;
-            cboLopHoc.DisplayMember = "TenLop";
+
+            // Hiển thị tên kèm giá tiền: "Lớp Vẽ - 1.500.000 đ"
+            cboLopHoc.DisplayMember = "DisplayText";
             cboLopHoc.ValueMember = "IdLopHoc";
-            cboLopHoc.SelectedIndex = -1; // Không chọn gì cả lúc đầu
+            cboLopHoc.SelectedIndex = -1;
         }
 
         // 2. Xử lý nút Thêm Lớp (+)
@@ -48,22 +56,25 @@ namespace winform
 
             // Thêm vào danh sách ID
             _selectedLopIds.Add(selectedLop.IdLopHoc);
-
+            _currentTotalMoney += selectedLop.ThanhTien;
             // Cập nhật giao diện Textbox
-            UpdateGiaoDienLopDaChon(selectedLop.TenLop);
+            UpdateGiaoDienHienThi(selectedLop.TenLop, selectedLop.ThanhTien);
         }
 
         // 3. Cập nhật Textbox hiển thị
-        private void UpdateGiaoDienLopDaChon(string newClassName)
+        private void UpdateGiaoDienHienThi(string tenLop, decimal giaTien)
         {
+            // Format tiền Việt Nam
+            string giaStr = giaTien.ToString("#,##0");
+
+            // Cập nhật List lớp
             if (string.IsNullOrEmpty(txtLopDaChon.Text))
-            {
-                txtLopDaChon.Text = "- " + newClassName;
-            }
+                txtLopDaChon.Text = $"- {tenLop} ({giaStr}đ)";
             else
-            {
-                txtLopDaChon.Text += "\r\n- " + newClassName; // Xuống dòng
-            }
+                txtLopDaChon.Text += $"\r\n- {tenLop} ({giaStr}đ)";
+
+            // Cập nhật Tổng tiền (Chữ Đậm, Đỏ)
+            txtTongTien.Text = _currentTotalMoney.ToString("#,##0") + " đ";
         }
 
         // 4. Nút Reset lớp (Xóa làm lại)
@@ -71,6 +82,11 @@ namespace winform
         {
             _selectedLopIds.Clear();
             txtLopDaChon.Clear();
+            txtTenHV.Clear();
+            _currentTotalMoney = 0;
+            txtTongTien.Text = "0 đ";
+
+            cboLopHoc.SelectedIndex = -1;
         }
 
         // 5. Xuất dữ liệu ra ngoài (cho Form Cha)
@@ -79,10 +95,17 @@ namespace winform
             return new HocVienDTO
             {
                 tenHv = txtTenHV.Text.Trim(),
-                ngaySinh = dtpNgaySinh.Value,
+                NgaySinh_Raw = dtpNgaySinh.Value,
                 gioiTinh = cboGioiTinh.SelectedItem?.ToString(),
                 dsLopId = _selectedLopIds // Trả về list ID đã chọn
             };
+        }
+
+        // 6. Xử lý nút Xóa dòng học viên
+        private void BtnXoaHV_Click(object sender, EventArgs e)
+        {
+            // Kích hoạt sự kiện OnDeleteRequest để báo cho Form cha biết
+            OnDeleteRequest?.Invoke(this, EventArgs.Empty);
         }
     }
 }

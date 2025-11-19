@@ -346,6 +346,7 @@
             this.btn_XuatExcel.TabIndex = 1;
             this.btn_XuatExcel.Text = "Excel";
             this.btn_XuatExcel.UseVisualStyleBackColor = false;
+            this.btn_XuatExcel.Click += new System.EventHandler(this.btn_XuatExcel_Click);
             // 
             // dgv_DanhSachHV
             // 
