@@ -43,6 +43,8 @@
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblLogo = new System.Windows.Forms.Label();
             this.contentPanel = new System.Windows.Forms.Panel();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             this.sidebarPanel.SuspendLayout();
             this.headerPanel.SuspendLayout();
             this.SuspendLayout();
@@ -50,6 +52,8 @@
             // sidebarPanel
             // 
             this.sidebarPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.sidebarPanel.Controls.Add(this.button2);
+            this.sidebarPanel.Controls.Add(this.button1);
             this.sidebarPanel.Controls.Add(this.btn_ThongKe);
             this.sidebarPanel.Controls.Add(this.btn_LichHoc);
             this.sidebarPanel.Controls.Add(this.btn_QLLopHoc);
@@ -59,7 +63,7 @@
             this.sidebarPanel.Controls.Add(this.btn_TongQuan);
             this.sidebarPanel.Dock = System.Windows.Forms.DockStyle.Left;
             this.sidebarPanel.Location = new System.Drawing.Point(0, 57);
-            this.sidebarPanel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.sidebarPanel.Margin = new System.Windows.Forms.Padding(2);
             this.sidebarPanel.Name = "sidebarPanel";
             this.sidebarPanel.Size = new System.Drawing.Size(188, 634);
             this.sidebarPanel.TabIndex = 0;
@@ -71,12 +75,12 @@
             this.btn_ThongKe.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_ThongKe.ForeColor = System.Drawing.SystemColors.Control;
             this.btn_ThongKe.Location = new System.Drawing.Point(0, 273);
-            this.btn_ThongKe.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btn_ThongKe.Margin = new System.Windows.Forms.Padding(2);
             this.btn_ThongKe.Name = "btn_ThongKe";
             this.btn_ThongKe.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.btn_ThongKe.Size = new System.Drawing.Size(188, 41);
             this.btn_ThongKe.TabIndex = 0;
-            this.btn_ThongKe.Text = "📈 Báo cáo thống kê";
+            this.btn_ThongKe.Text = "🎨 Quản lý họa cụ";
             this.btn_ThongKe.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btn_ThongKe.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btn_ThongKe.UseVisualStyleBackColor = true;
@@ -88,7 +92,7 @@
             this.btn_LichHoc.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_LichHoc.ForeColor = System.Drawing.SystemColors.Control;
             this.btn_LichHoc.Location = new System.Drawing.Point(2, 228);
-            this.btn_LichHoc.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btn_LichHoc.Margin = new System.Windows.Forms.Padding(2);
             this.btn_LichHoc.Name = "btn_LichHoc";
             this.btn_LichHoc.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.btn_LichHoc.Size = new System.Drawing.Size(188, 41);
@@ -105,7 +109,7 @@
             this.btn_QLLopHoc.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_QLLopHoc.ForeColor = System.Drawing.SystemColors.Control;
             this.btn_QLLopHoc.Location = new System.Drawing.Point(2, 182);
-            this.btn_QLLopHoc.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btn_QLLopHoc.Margin = new System.Windows.Forms.Padding(2);
             this.btn_QLLopHoc.Name = "btn_QLLopHoc";
             this.btn_QLLopHoc.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.btn_QLLopHoc.Size = new System.Drawing.Size(188, 41);
@@ -123,15 +127,16 @@
             this.btn_QL_ThuChi.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_QL_ThuChi.ForeColor = System.Drawing.SystemColors.Control;
             this.btn_QL_ThuChi.Location = new System.Drawing.Point(2, 136);
-            this.btn_QL_ThuChi.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btn_QL_ThuChi.Margin = new System.Windows.Forms.Padding(2);
             this.btn_QL_ThuChi.Name = "btn_QL_ThuChi";
             this.btn_QL_ThuChi.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.btn_QL_ThuChi.Size = new System.Drawing.Size(188, 41);
             this.btn_QL_ThuChi.TabIndex = 0;
-            this.btn_QL_ThuChi.Text = "💰 Quản lý thu chi";
+            this.btn_QL_ThuChi.Text = "🏷️ Quản lý khuyến mãi";
             this.btn_QL_ThuChi.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btn_QL_ThuChi.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btn_QL_ThuChi.UseVisualStyleBackColor = true;
+            this.btn_QL_ThuChi.Click += new System.EventHandler(this.btn_QL_ThuChi_Click);
             // 
             // btn_QLKhoaHoc
             // 
@@ -140,7 +145,7 @@
             this.btn_QLKhoaHoc.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_QLKhoaHoc.ForeColor = System.Drawing.SystemColors.Control;
             this.btn_QLKhoaHoc.Location = new System.Drawing.Point(2, 91);
-            this.btn_QLKhoaHoc.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btn_QLKhoaHoc.Margin = new System.Windows.Forms.Padding(2);
             this.btn_QLKhoaHoc.Name = "btn_QLKhoaHoc";
             this.btn_QLKhoaHoc.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.btn_QLKhoaHoc.Size = new System.Drawing.Size(188, 41);
@@ -158,7 +163,7 @@
             this.btn_QLHocVien.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_QLHocVien.ForeColor = System.Drawing.SystemColors.Control;
             this.btn_QLHocVien.Location = new System.Drawing.Point(0, 46);
-            this.btn_QLHocVien.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btn_QLHocVien.Margin = new System.Windows.Forms.Padding(2);
             this.btn_QLHocVien.Name = "btn_QLHocVien";
             this.btn_QLHocVien.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.btn_QLHocVien.Size = new System.Drawing.Size(188, 41);
@@ -176,7 +181,7 @@
             this.btn_TongQuan.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_TongQuan.ForeColor = System.Drawing.SystemColors.Control;
             this.btn_TongQuan.Location = new System.Drawing.Point(0, 0);
-            this.btn_TongQuan.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btn_TongQuan.Margin = new System.Windows.Forms.Padding(2);
             this.btn_TongQuan.Name = "btn_TongQuan";
             this.btn_TongQuan.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.btn_TongQuan.Size = new System.Drawing.Size(188, 41);
@@ -197,7 +202,7 @@
             this.headerPanel.Controls.Add(this.lblLogo);
             this.headerPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.headerPanel.Location = new System.Drawing.Point(0, 0);
-            this.headerPanel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.headerPanel.Margin = new System.Windows.Forms.Padding(2);
             this.headerPanel.Name = "headerPanel";
             this.headerPanel.Size = new System.Drawing.Size(1050, 57);
             this.headerPanel.TabIndex = 1;
@@ -212,7 +217,7 @@
             this.btnLogout.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnLogout.ForeColor = System.Drawing.Color.White;
             this.btnLogout.Location = new System.Drawing.Point(158, 10);
-            this.btnLogout.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnLogout.Margin = new System.Windows.Forms.Padding(2);
             this.btnLogout.Name = "btnLogout";
             this.btnLogout.Size = new System.Drawing.Size(93, 35);
             this.btnLogout.TabIndex = 4;
@@ -271,10 +276,44 @@
             this.contentPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.contentPanel.ForeColor = System.Drawing.SystemColors.Control;
             this.contentPanel.Location = new System.Drawing.Point(188, 57);
-            this.contentPanel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.contentPanel.Margin = new System.Windows.Forms.Padding(2);
             this.contentPanel.Name = "contentPanel";
             this.contentPanel.Size = new System.Drawing.Size(862, 634);
             this.contentPanel.TabIndex = 2;
+            // 
+            // button1
+            // 
+            this.button1.FlatAppearance.BorderSize = 0;
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button1.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.ForeColor = System.Drawing.SystemColors.Control;
+            this.button1.Location = new System.Drawing.Point(2, 318);
+            this.button1.Margin = new System.Windows.Forms.Padding(2);
+            this.button1.Name = "button1";
+            this.button1.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
+            this.button1.Size = new System.Drawing.Size(188, 41);
+            this.button1.TabIndex = 0;
+            this.button1.Text = "💼 Quản lý giáo viên";
+            this.button1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.button1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            this.button2.FlatAppearance.BorderSize = 0;
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button2.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button2.ForeColor = System.Drawing.SystemColors.Control;
+            this.button2.Location = new System.Drawing.Point(0, 363);
+            this.button2.Margin = new System.Windows.Forms.Padding(2);
+            this.button2.Name = "button2";
+            this.button2.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
+            this.button2.Size = new System.Drawing.Size(188, 41);
+            this.button2.TabIndex = 0;
+            this.button2.Text = "📈 Báo cáo thống kê";
+            this.button2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.button2.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.button2.UseVisualStyleBackColor = true;
             // 
             // Dashboard
             // 
@@ -285,7 +324,7 @@
             this.Controls.Add(this.contentPanel);
             this.Controls.Add(this.sidebarPanel);
             this.Controls.Add(this.headerPanel);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Dashboard";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Trung tâm Mỹ thuật Sáng tạo - Quản lý";
@@ -313,5 +352,7 @@
         private System.Windows.Forms.Button btn_QLLopHoc;
         private System.Windows.Forms.Button btn_QL_ThuChi;
         private System.Windows.Forms.Panel contentPanel;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button1;
     }
 }

@@ -12,6 +12,11 @@ namespace winform
 {
     public partial class LopHocItem : UserControl
     {
+
+        public event EventHandler OnItemClick;
+
+        public int IdLopHoc { get; set; }
+
         public LopHocItem()
         {
             InitializeComponent();
@@ -22,8 +27,16 @@ namespace winform
             lblTenLop.Text = tenLop ;
             lblTenGV.Text +=" " + giaoVien;
             lblSiSo.Text ="Sỉ Số"+ soHocVien.ToString() + "/" + SLToiDa.ToString();
-            
-            
+
+            if (soHocVien ==SLToiDa) // Giả sử 30 là full
+            {
+                pnlStatusStrip.FillColor = System.Drawing.Color.Red;
+            }
+        }
+
+        private void Item_Click(object sender, EventArgs e)
+        {
+            OnItemClick?.Invoke(this, e);
         }
     }
 }

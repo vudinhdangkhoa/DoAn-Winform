@@ -143,6 +143,18 @@
     <Compile Include="ucKhoaHoc.Designer.cs">
       <DependentUpon>ucKhoaHoc.cs</DependentUpon>
     </Compile>
+    <Compile Include="ucQLHoaCu.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQLHoaCu.Designer.cs">
+      <DependentUpon>ucQLHoaCu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucQLKhuyenMai.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQLKhuyenMai.Designer.cs">
+      <DependentUpon>ucQLKhuyenMai.cs</DependentUpon>
+    </Compile>
     <Compile Include="ucQuanLyHocVien.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -186,6 +198,12 @@
     <EmbeddedResource Include="ucKhoaHoc.resx">
       <DependentUpon>ucKhoaHoc.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ucQLHoaCu.resx">
+      <DependentUpon>ucQLHoaCu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucQLKhuyenMai.resx">
+      <DependentUpon>ucQLKhuyenMai.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ucQuanLyHocVien.resx">
       <DependentUpon>ucQuanLyHocVien.cs</DependentUpon>
     </EmbeddedResource>
@@ -208,6 +226,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\logoKSL.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\logo-foo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\logo-foo1.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

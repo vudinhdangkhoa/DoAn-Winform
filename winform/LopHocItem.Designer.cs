@@ -1,4 +1,7 @@
-﻿namespace winform
+﻿using Guna.UI2.WinForms;
+using System.Drawing;
+using System.Windows.Forms;
+namespace winform
 {
     partial class LopHocItem
     {
@@ -28,99 +31,125 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.lblTenLop = new System.Windows.Forms.Label();
-            this.lblSiSo = new System.Windows.Forms.Label();
+            this.pnlMain = new Guna.UI2.WinForms.Guna2Panel();
+            this.lblSiSo = new Guna.UI2.WinForms.Guna2Button();
+            this.lblTitleGV = new System.Windows.Forms.Label();
             this.lblTenGV = new System.Windows.Forms.Label();
-            this.panel1.SuspendLayout();
-            this.tableLayoutPanel1.SuspendLayout();
+            this.lblTenLop = new System.Windows.Forms.Label();
+            this.pnlStatusStrip = new Guna.UI2.WinForms.Guna2Panel();
+            this.pnlMain.SuspendLayout();
             this.SuspendLayout();
             // 
-            // panel1
+            // pnlMain
             // 
-            this.panel1.Controls.Add(this.tableLayoutPanel1);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(0, 0);
-            this.panel1.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(338, 81);
-            this.panel1.TabIndex = 0;
-            // 
-            // tableLayoutPanel1
-            // 
-            this.tableLayoutPanel1.ColumnCount = 1;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.lblTenLop, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.lblSiSo, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.lblTenGV, 0, 2);
-            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 3;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(338, 81);
-            this.tableLayoutPanel1.TabIndex = 3;
-            // 
-            // lblTenLop
-            // 
-            this.lblTenLop.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblTenLop.Font = new System.Drawing.Font("Segoe UI Semibold", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTenLop.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.lblTenLop.Location = new System.Drawing.Point(2, 0);
-            this.lblTenLop.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblTenLop.Name = "lblTenLop";
-            this.lblTenLop.Size = new System.Drawing.Size(334, 25);
-            this.lblTenLop.TabIndex = 0;
-            this.lblTenLop.Text = "Tên Lớp Học";
+            this.pnlMain.BackColor = System.Drawing.Color.Transparent;
+            this.pnlMain.BorderRadius = 12;
+            this.pnlMain.Controls.Add(this.lblSiSo);
+            this.pnlMain.Controls.Add(this.lblTitleGV);
+            this.pnlMain.Controls.Add(this.lblTenGV);
+            this.pnlMain.Controls.Add(this.lblTenLop);
+            this.pnlMain.Controls.Add(this.pnlStatusStrip);
+            this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlMain.FillColor = System.Drawing.Color.White;
+            this.pnlMain.Location = new System.Drawing.Point(0, 0);
+            this.pnlMain.Name = "pnlMain";
+            this.pnlMain.ShadowDecoration.Color = System.Drawing.Color.Gray;
+            this.pnlMain.ShadowDecoration.Depth = 10;
+            this.pnlMain.ShadowDecoration.Enabled = true;
+            this.pnlMain.ShadowDecoration.Shadow = new System.Windows.Forms.Padding(3, 3, 5, 5);
+            this.pnlMain.Size = new System.Drawing.Size(360, 110);
+            this.pnlMain.TabIndex = 0;
+            this.pnlMain.Click += new System.EventHandler(this.Item_Click);
             // 
             // lblSiSo
             // 
-            this.lblSiSo.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblSiSo.Font = new System.Drawing.Font("Segoe UI Semibold", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSiSo.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.lblSiSo.Location = new System.Drawing.Point(2, 25);
-            this.lblSiSo.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblSiSo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblSiSo.BorderRadius = 10;
+            this.lblSiSo.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.lblSiSo.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.lblSiSo.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.lblSiSo.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.lblSiSo.Enabled = false;
+            this.lblSiSo.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(230)))), ((int)(((byte)(255)))));
+            this.lblSiSo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblSiSo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(100)))), ((int)(((byte)(255)))));
+            this.lblSiSo.Location = new System.Drawing.Point(270, 15);
             this.lblSiSo.Name = "lblSiSo";
-            this.lblSiSo.Size = new System.Drawing.Size(334, 28);
-            this.lblSiSo.TabIndex = 0;
-            this.lblSiSo.Text = "Sĩ Số:";
-            this.lblSiSo.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblSiSo.Size = new System.Drawing.Size(80, 25);
+            this.lblSiSo.TabIndex = 4;
+            this.lblSiSo.Text = "30 HV";
+            // 
+            // lblTitleGV
+            // 
+            this.lblTitleGV.AutoSize = true;
+            this.lblTitleGV.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblTitleGV.ForeColor = System.Drawing.Color.Gray;
+            this.lblTitleGV.Location = new System.Drawing.Point(28, 50);
+            this.lblTitleGV.Name = "lblTitleGV";
+            this.lblTitleGV.Size = new System.Drawing.Size(59, 15);
+            this.lblTitleGV.TabIndex = 2;
+            this.lblTitleGV.Text = "Giáo viên:";
+            this.lblTitleGV.Click += new System.EventHandler(this.Item_Click);
             // 
             // lblTenGV
             // 
-            this.lblTenGV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblTenGV.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTenGV.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.lblTenGV.Location = new System.Drawing.Point(2, 53);
-            this.lblTenGV.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblTenGV.AutoSize = true;
+            this.lblTenGV.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.lblTenGV.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lblTenGV.Location = new System.Drawing.Point(28, 70);
             this.lblTenGV.Name = "lblTenGV";
-            this.lblTenGV.Size = new System.Drawing.Size(334, 33);
-            this.lblTenGV.TabIndex = 0;
-            this.lblTenGV.Text = "Tên Giáo Viên:";
+            this.lblTenGV.Size = new System.Drawing.Size(103, 19);
+            this.lblTenGV.TabIndex = 3;
+            this.lblTenGV.Text = "Nguyễn Văn A";
+            this.lblTenGV.Click += new System.EventHandler(this.Item_Click);
+            // 
+            // lblTenLop
+            // 
+            this.lblTenLop.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTenLop.AutoEllipsis = true;
+            this.lblTenLop.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.lblTenLop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.lblTenLop.Location = new System.Drawing.Point(25, 12);
+            this.lblTenLop.Name = "lblTenLop";
+            this.lblTenLop.Size = new System.Drawing.Size(250, 30);
+            this.lblTenLop.TabIndex = 1;
+            this.lblTenLop.Text = "Lớp Vẽ Màu Nước K1";
+            this.lblTenLop.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblTenLop.Click += new System.EventHandler(this.Item_Click);
+            // 
+            // pnlStatusStrip
+            // 
+            this.pnlStatusStrip.BorderRadius = 6;
+            this.pnlStatusStrip.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
+            this.pnlStatusStrip.Location = new System.Drawing.Point(10, 15);
+            this.pnlStatusStrip.Name = "pnlStatusStrip";
+            this.pnlStatusStrip.Size = new System.Drawing.Size(6, 80);
+            this.pnlStatusStrip.TabIndex = 0;
             // 
             // LopHocItem
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.panel1);
-            this.Margin = new System.Windows.Forms.Padding(2);
+            this.BackColor = System.Drawing.Color.Transparent;
+            this.Controls.Add(this.pnlMain);
+            this.Margin = new System.Windows.Forms.Padding(10);
             this.Name = "LopHocItem";
-            this.Size = new System.Drawing.Size(338, 81);
-            this.panel1.ResumeLayout(false);
-            this.tableLayoutPanel1.ResumeLayout(false);
+            this.Size = new System.Drawing.Size(360, 110);
+            this.pnlMain.ResumeLayout(false);
+            this.pnlMain.PerformLayout();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Panel panel1;
+        // Khai báo biến
+        private Guna.UI2.WinForms.Guna2Panel pnlMain;
+        private Guna.UI2.WinForms.Guna2Panel pnlStatusStrip;
         private System.Windows.Forms.Label lblTenLop;
         private System.Windows.Forms.Label lblTenGV;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.Label lblSiSo;
+        private System.Windows.Forms.Label lblTitleGV;
+        private Guna.UI2.WinForms.Guna2Button lblSiSo;
     }
 }

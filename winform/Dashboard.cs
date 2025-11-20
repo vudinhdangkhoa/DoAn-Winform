@@ -146,5 +146,12 @@ namespace winform
             ucQuanLyLopHoc ucLopHoc = new ucQuanLyLopHoc();
             LoadUserControl(ucLopHoc);
         }
+
+        private void btn_QL_ThuChi_Click(object sender, EventArgs e)
+        {
+            ActivateButton(sender);
+            ucQLKhuyenMai ucQLKhuyenMai = new ucQLKhuyenMai();
+            LoadUserControl(ucQLKhuyenMai);
+        }
     }
 }
