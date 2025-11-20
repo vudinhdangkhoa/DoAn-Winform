@@ -132,5 +132,19 @@ namespace winform
             ucQuanLyHocVien ucQuanLyHocVien = new ucQuanLyHocVien();
             LoadUserControl(ucQuanLyHocVien);
         }
+
+        private void btn_QLKhoaHoc_Click(object sender, EventArgs e)
+        {
+            ActivateButton(sender);
+            ucKhoaHoc ucKhoaHoc = new ucKhoaHoc();
+            LoadUserControl(ucKhoaHoc);
+        }
+
+        private void btn_QLLopHoc_Click(object sender, EventArgs e)
+        {
+            ActivateButton(sender);
+            ucQuanLyLopHoc ucLopHoc = new ucQuanLyLopHoc();
+            LoadUserControl(ucLopHoc);
+        }
     }
 }

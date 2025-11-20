@@ -149,6 +149,12 @@
     <Compile Include="ucQuanLyHocVien.Designer.cs">
       <DependentUpon>ucQuanLyHocVien.cs</DependentUpon>
     </Compile>
+    <Compile Include="ucQuanLyLopHoc.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQuanLyLopHoc.Designer.cs">
+      <DependentUpon>ucQuanLyLopHoc.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="DanhNhap.resx">
       <DependentUpon>DanhNhap.cs</DependentUpon>
     </EmbeddedResource>
@@ -182,6 +188,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ucQuanLyHocVien.resx">
       <DependentUpon>ucQuanLyHocVien.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucQuanLyLopHoc.resx">
+      <DependentUpon>ucQuanLyLopHoc.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
