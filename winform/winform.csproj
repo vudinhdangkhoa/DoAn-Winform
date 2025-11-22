@@ -111,6 +111,36 @@
     </Compile>
     <Compile Include="DTO.cs" />
     <Compile Include="DungChung.cs" />
+    <Compile Include="frmAddHoaCu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmAddHoaCu.Designer.cs">
+      <DependentUpon>frmAddHoaCu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmAddLoaiHocCu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmAddLoaiHocCu.Designer.cs">
+      <DependentUpon>frmAddLoaiHocCu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmBanHangHoaCu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmBanHangHoaCu.Designer.cs">
+      <DependentUpon>frmBanHangHoaCu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmNhapKhoHoaCu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmNhapKhoHoaCu.Designer.cs">
+      <DependentUpon>frmNhapKhoHoaCu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmQLCacApDungKM.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmQLCacApDungKM.Designer.cs">
+      <DependentUpon>frmQLCacApDungKM.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmThemHocVien.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -143,23 +173,35 @@
     <Compile Include="ucKhoaHoc.Designer.cs">
       <DependentUpon>ucKhoaHoc.cs</DependentUpon>
     </Compile>
-    <Compile Include="ucQLHoaCu.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="ucQLHoaCu.Designer.cs">
-      <DependentUpon>ucQLHoaCu.cs</DependentUpon>
-    </Compile>
     <Compile Include="ucQLKhuyenMai.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="ucQLKhuyenMai.Designer.cs">
       <DependentUpon>ucQLKhuyenMai.cs</DependentUpon>
     </Compile>
+    <Compile Include="ucQuanLyGiaoVien.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQuanLyGiaoVien.Designer.cs">
+      <DependentUpon>ucQuanLyGiaoVien.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucQuanLyHoaCu.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQuanLyHoaCu.Designer.cs">
+      <DependentUpon>ucQuanLyHoaCu.cs</DependentUpon>
+    </Compile>
     <Compile Include="ucQuanLyHocVien.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="ucQuanLyHocVien.Designer.cs">
       <DependentUpon>ucQuanLyHocVien.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucQuanLyLichHoc.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQuanLyLichHoc.Designer.cs">
+      <DependentUpon>ucQuanLyLichHoc.cs</DependentUpon>
     </Compile>
     <Compile Include="ucQuanLyLopHoc.cs">
       <SubType>UserControl</SubType>
@@ -172,6 +214,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Dashboard.resx">
       <DependentUpon>Dashboard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmAddHoaCu.resx">
+      <DependentUpon>frmAddHoaCu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmAddLoaiHocCu.resx">
+      <DependentUpon>frmAddLoaiHocCu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmBanHangHoaCu.resx">
+      <DependentUpon>frmBanHangHoaCu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmNhapKhoHoaCu.resx">
+      <DependentUpon>frmNhapKhoHoaCu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmQLCacApDungKM.resx">
+      <DependentUpon>frmQLCacApDungKM.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmThemHocVien.resx">
       <DependentUpon>frmThemHocVien.cs</DependentUpon>
@@ -198,14 +255,20 @@
     <EmbeddedResource Include="ucKhoaHoc.resx">
       <DependentUpon>ucKhoaHoc.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ucQLHoaCu.resx">
-      <DependentUpon>ucQLHoaCu.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="ucQLKhuyenMai.resx">
       <DependentUpon>ucQLKhuyenMai.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ucQuanLyGiaoVien.resx">
+      <DependentUpon>ucQuanLyGiaoVien.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucQuanLyHoaCu.resx">
+      <DependentUpon>ucQuanLyHoaCu.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ucQuanLyHocVien.resx">
       <DependentUpon>ucQuanLyHocVien.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucQuanLyLichHoc.resx">
+      <DependentUpon>ucQuanLyLichHoc.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ucQuanLyLopHoc.resx">
       <DependentUpon>ucQuanLyLopHoc.cs</DependentUpon>

@@ -13,8 +13,9 @@ namespace winform
 {
     internal class DungChung
     {
-        //public static string BaseUrl = "http://localhost:5225/api/";
-        public static string BaseUrl = "https://2gcqx76s-5225.asse.devtunnels.ms/api/";
+        public static string BaseUrlImage = "http://localhost:5225";
+        public static string BaseUrl = "http://localhost:5225/api/";
+        //public static string BaseUrl = "https://2gcqx76s-5225.asse.devtunnels.ms/api/";
         public static string getUrl(string url)=> BaseUrl + url;
 
         public static async Task<dynamic> GetDataTongQuan(string url)
@@ -223,5 +224,65 @@ namespace winform
                 }
             }
         }
+    }
+
+    public class UCQuanLyKhuyenMai
+    {
+
+        public static async Task<dynamic> GetChuongTrinhKhuyenMai()
+        {
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = await client.GetAsync(DungChung.getUrl("QLKhuyenMai/GetAllKhuyenMai"));
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    var data = await response.Content.ReadAsStringAsync();
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(data);
+                    Console.WriteLine(data);
+                }
+                MessageBox.Show("Lỗi kết nối đến server", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+            catch (HttpRequestException e)
+            {
+                // Xử lý lỗi không kết nối được tới server
+                MessageBox.Show($"Không thể kết nối tới máy chủ: {e.Message}");
+                return null;
+            }
+
+        }
+
+        public static async Task<dynamic> GetKhoaHocVaHoaCu()
+        {
+            try
+            {
+
+                using (HttpClient client = new HttpClient())
+                {
+
+                    HttpResponseMessage response = await client.GetAsync(DungChung.getUrl("QLKhuyenMai/GetKhoaHocVaHoaCu"));
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(data);
+                        Console.WriteLine(data);
+                    }
+                    MessageBox.Show("Lỗi kết nối đến server", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return null;
+
+                }
+
+            }
+            catch (HttpRequestException e)
+            {
+                // Xử lý lỗi không kết nối được tới server
+                MessageBox.Show($"Không thể kết nối tới máy chủ: {e.Message}");
+                return null;
+            }
+        }
+
+
+
     }
 }

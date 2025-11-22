@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace winform
 {
-    public partial class ucQLHoaCu : UserControl
+    public partial class ucQuanLyLichHoc : UserControl
     {
-        public ucQLHoaCu()
+        public ucQuanLyLichHoc()
         {
             InitializeComponent();
         }

@@ -153,5 +153,26 @@ namespace winform
             ucQLKhuyenMai ucQLKhuyenMai = new ucQLKhuyenMai();
             LoadUserControl(ucQLKhuyenMai);
         }
+
+       
+
+        private void btn_QuanLyHoaCu_Click(object sender, EventArgs e)
+        {
+            ActivateButton(sender);
+            ucQuanLyHoaCu ucQLHoaCu = new ucQuanLyHoaCu(int.Parse(userId),username);
+            LoadUserControl(ucQLHoaCu);
+        }
+
+        private void btn_QuanLyGiaoVien_Click(object sender, EventArgs e)
+        {
+            ActivateButton(sender);
+            ucQuanLyGiaoVien ucQLGiaoVien = new ucQuanLyGiaoVien();
+            LoadUserControl(ucQLGiaoVien);
+        }
+
+        private void btn_LichHoc_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

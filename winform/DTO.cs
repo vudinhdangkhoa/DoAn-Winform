@@ -67,4 +67,21 @@ namespace winform
             }
         }
     }
+
+    public class ViewHocCuDTO
+    {
+        public int idLoaiHocCu { get; set; }
+        public string tenLoai { get; set; }
+        public int idHocCu { get; set; }
+        public string tenHocCu { get; set; }
+        public double giaBan { get; set; }
+        public int soLuong { get; set; }
+        public double giamGia { get; set; } // Giá trị giảm giá tính toán từ server
+    }
+
+    public class ViewLoaiHocCuDTO
+    {
+        public int idLoaiHocCu { get; set; }
+        public string tenLoai { get; set; }
+    }
 }
