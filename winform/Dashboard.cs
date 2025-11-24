@@ -172,7 +172,16 @@ namespace winform
 
         private void btn_LichHoc_Click(object sender, EventArgs e)
         {
+            ActivateButton(sender);
+            ucQuanLyLichHoc ucLichHoc = new ucQuanLyLichHoc();
+            LoadUserControl(ucLichHoc);
+        }
 
+        private void button2_Click(object sender, EventArgs e)
+        {
+            ActivateButton(sender);
+            ucQLThongKe ucThongKe = new ucQLThongKe();
+            LoadUserControl(ucThongKe);
         }
     }
 }

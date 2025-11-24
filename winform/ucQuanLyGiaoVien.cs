@@ -148,6 +148,8 @@ namespace winform
 
             // 2. Load dữ liệu vào Panel Phải (Lịch dạy)
             LoadLichDay(_selectedTeacherId);
+            btnLuu.Text = "Lưu Thay Đổi";
+            btnXoa.Enabled = true;
         }
 
         // --- KHU VỰC 2: CHI TIẾT & UPDATE (MIDDLE) ---
@@ -163,46 +165,8 @@ namespace winform
             }
         }
 
-        private async void BtnLuu_Click(object sender, EventArgs e)
-        {
-            if (_selectedTeacherId == -1) return;
-
-            // Dùng MultipartFormDataContent để gửi cả file và text (giống form HTML)
-            using (var content = new MultipartFormDataContent())
-            {
-                content.Add(new StringContent(txtTenGV.Text), "TenGv");
-                content.Add(new StringContent(txtSDT.Text), "Sdt");
-                content.Add(new StringContent(dtpNgaySinh.Value.ToString("yyyy-MM-dd")), "NgaySinh");
-                content.Add(new StringContent(numKinhNghiem.Value.ToString()), "SoNamKinhNghiem");
-
-                // Nếu có chọn ảnh mới thì gửi kèm
-                if (_currentAvatarPath != null)
-                {
-                    var fileStream = File.OpenRead(_currentAvatarPath);
-                    var fileContent = new StreamContent(fileStream);
-                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg"); // Hoặc check đuôi file
-                    content.Add(fileContent, "Avatar", Path.GetFileName(_currentAvatarPath));
-                }
-
-                try
-                {
-                    using (HttpClient client = new HttpClient())
-                    {
-                        var response = await client.PutAsync(DungChung.getUrl($"QLGiaoVien/updateTeacher/{_selectedTeacherId}"), content);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            MessageBox.Show("Cập nhật thành công!");
-                            LoadData(); // Reload danh sách
-                        }
-                        else
-                        {
-                            MessageBox.Show("Cập nhật thất bại: " + await response.Content.ReadAsStringAsync());
-                        }
-                    }
-                }
-                catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
-            }
-        }
+        
+        
 
         private async void BtnXoa_Click(object sender, EventArgs e)
         {
@@ -339,6 +303,84 @@ namespace winform
                 }
             }
             catch (Exception ex) { MessageBox.Show("Lỗi xuất Excel: " + ex.Message); }
+        }
+        private void ResetForm()
+        {
+            _selectedTeacherId = -1;
+            _currentAvatarPath = null;
+
+            txtTenGV.Clear();
+            txtSDT.Clear();
+            dtpNgaySinh.Value = DateTime.Now;
+            numKinhNghiem.Value = 0;
+            picAvatar.Image = null; // Hoặc ảnh mặc định
+
+            btnLuu.Text = "Thêm Mới"; // Đổi text nút
+            btnXoa.Enabled = false;   // Ẩn nút xóa khi đang thêm mới
+
+            treeLichDay.Nodes.Clear(); // Xóa lịch dạy
+            txtTenGV.Focus();
+        }
+        private async void BtnLuu_Click(object sender, EventArgs e)
+        {
+            // Validate chung
+            if (string.IsNullOrWhiteSpace(txtTenGV.Text) || string.IsNullOrWhiteSpace(txtSDT.Text))
+            {
+                MessageBox.Show("Vui lòng nhập đủ Tên và SĐT.");
+                return;
+            }
+
+            // Chuẩn bị dữ liệu Multipart
+            using (var content = new MultipartFormDataContent())
+            {
+                content.Add(new StringContent(txtTenGV.Text), "TenGv");
+                content.Add(new StringContent(txtSDT.Text), "Sdt");
+                content.Add(new StringContent(dtpNgaySinh.Value.ToString("yyyy-MM-dd")), "NgaySinh");
+                content.Add(new StringContent(numKinhNghiem.Value.ToString()), "SoNamKinhNghiem");
+
+                if (_currentAvatarPath != null)
+                {
+                    var fileStream = File.OpenRead(_currentAvatarPath);
+                    var fileContent = new StreamContent(fileStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                    content.Add(fileContent, "Avatar", Path.GetFileName(_currentAvatarPath));
+                }
+
+                try
+                {
+                    using (HttpClient client = new HttpClient())
+                    {
+                        HttpResponseMessage response;
+
+                        // LOGIC QUAN TRỌNG: Kiểm tra xem là THÊM hay SỬA
+                        if (_selectedTeacherId == -1)
+                        {
+                            // --- THÊM MỚI ---
+                            response = await client.PostAsync(DungChung.getUrl("QLGiaoVien/AddTeacher"), content);
+                        }
+                        else
+                        {
+                            // --- CẬP NHẬT ---
+                            response = await client.PutAsync(DungChung.getUrl($"QLGiaoVien/updateTeacher/{_selectedTeacherId}"), content);
+                        }
+
+                        // Xử lý kết quả chung
+                        if (response.IsSuccessStatusCode)
+                        {
+                            string action = (_selectedTeacherId == -1) ? "Thêm mới" : "Cập nhật";
+                            MessageBox.Show($"{action} thành công!");
+
+                            LoadData(); // Reload danh sách bên trái
+                            ResetForm(); // Reset để sẵn sàng thêm người tiếp theo
+                        }
+                        else
+                        {
+                            MessageBox.Show("Thất bại: " + await response.Content.ReadAsStringAsync());
+                        }
+                    }
+                }
+                catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
+            }
         }
     }
 }

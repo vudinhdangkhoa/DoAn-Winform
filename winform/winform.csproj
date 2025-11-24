@@ -129,6 +129,18 @@
     <Compile Include="frmBanHangHoaCu.Designer.cs">
       <DependentUpon>frmBanHangHoaCu.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmChiTietKhoaHoc.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmChiTietKhoaHoc.Designer.cs">
+      <DependentUpon>frmChiTietKhoaHoc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmChiTietLopHoc.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmChiTietLopHoc.Designer.cs">
+      <DependentUpon>frmChiTietLopHoc.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmNhapKhoHoaCu.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -141,11 +153,23 @@
     <Compile Include="frmQLCacApDungKM.Designer.cs">
       <DependentUpon>frmQLCacApDungKM.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmQLChuyenMon.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmQLChuyenMon.Designer.cs">
+      <DependentUpon>frmQLChuyenMon.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmThemHocVien.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmThemHocVien.Designer.cs">
       <DependentUpon>frmThemHocVien.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmXuLyHocBu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmXuLyHocBu.Designer.cs">
+      <DependentUpon>frmXuLyHocBu.cs</DependentUpon>
     </Compile>
     <Compile Include="LopHocItem.cs">
       <SubType>UserControl</SubType>
@@ -178,6 +202,12 @@
     </Compile>
     <Compile Include="ucQLKhuyenMai.Designer.cs">
       <DependentUpon>ucQLKhuyenMai.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucQLThongKe.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQLThongKe.Designer.cs">
+      <DependentUpon>ucQLThongKe.cs</DependentUpon>
     </Compile>
     <Compile Include="ucQuanLyGiaoVien.cs">
       <SubType>UserControl</SubType>
@@ -224,14 +254,26 @@
     <EmbeddedResource Include="frmBanHangHoaCu.resx">
       <DependentUpon>frmBanHangHoaCu.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmChiTietKhoaHoc.resx">
+      <DependentUpon>frmChiTietKhoaHoc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmChiTietLopHoc.resx">
+      <DependentUpon>frmChiTietLopHoc.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmNhapKhoHoaCu.resx">
       <DependentUpon>frmNhapKhoHoaCu.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmQLCacApDungKM.resx">
       <DependentUpon>frmQLCacApDungKM.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmQLChuyenMon.resx">
+      <DependentUpon>frmQLChuyenMon.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmThemHocVien.resx">
       <DependentUpon>frmThemHocVien.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmXuLyHocBu.resx">
+      <DependentUpon>frmXuLyHocBu.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LopHocItem.resx">
       <DependentUpon>LopHocItem.cs</DependentUpon>
@@ -257,6 +299,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ucQLKhuyenMai.resx">
       <DependentUpon>ucQLKhuyenMai.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucQLThongKe.resx">
+      <DependentUpon>ucQLThongKe.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ucQuanLyGiaoVien.resx">
       <DependentUpon>ucQuanLyGiaoVien.cs</DependentUpon>
