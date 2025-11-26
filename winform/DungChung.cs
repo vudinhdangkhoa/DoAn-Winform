@@ -16,6 +16,11 @@ namespace winform
         public static string BaseUrlImage = "http://localhost:5225";
         public static string BaseUrl = "http://localhost:5225/api/";
         //public static string BaseUrl = "https://2gcqx76s-5225.asse.devtunnels.ms/api/";
+
+        static public string adminRole = "Admin";
+        static public string nhanVienKhoRole = "Nhân Viên Kho";
+        static public string nhanVienHocVuRole = "Nhân Viên Học Vụ";
+
         public static string getUrl(string url)=> BaseUrl + url;
 
         public static async Task<dynamic> GetDataTongQuan(string url)

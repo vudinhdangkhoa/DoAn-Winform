@@ -79,11 +79,12 @@ namespace winform
                     {
                         string status = jObject["status"]?.ToString();
                         string userId = jObject["userId"]?.ToString();
-
+                        string username = jObject["tenNv"]?.ToString();
+                        string role = jObject["role"]?.ToString();
                         if (status == "staff")
                         {
                             this.Hide();
-                            Dashboard dashboard = new Dashboard(userId);
+                            Dashboard dashboard = new Dashboard(userId,username,role);
                             dashboard.ShowDialog();
                             this.Close();
                         }

@@ -8,8 +8,8 @@ namespace winform
 {
     public partial class Dashboard : Form
     {
-        private string userRole = "Admin"; // Có thể thay đổi thành "Nhân viên"
-        private string username = "Admin";
+        private string userRole ; // Có thể thay đổi thành "Nhân viên"
+        private string username ;
         private string userId;
         private Panel activeMenu;
         private Button currentButton;
@@ -20,10 +20,12 @@ namespace winform
 
         }
 
-        public Dashboard(string userId)
+        public Dashboard(string userId,string username,string userRole)
         {
             InitializeComponent();
            this.userId = userId;
+            this.username = username;
+            this.userRole = userRole;
         }
 
         private async void Dashboard_Load(object sender, EventArgs e)
@@ -50,9 +52,50 @@ namespace winform
             }
             // Chúng ta sẽ xử lý việc hiển thị nội dung mặc định ở đây sau
             btn_TongQuan.PerformClick();
+
+            loadRoleBasedUI();
         }
 
-      
+        private void loadRoleBasedUI()
+        {
+            // Ẩn hoặc hiển thị các nút dựa trên vai trò người dùng
+           if(userRole== DungChung.adminRole)
+            {
+                btn_QuanLyHoaCu.Visible = true;
+                btn_QuanLyGiaoVien.Visible = true;
+                btn_QLHocVien.Visible = true;
+                btn_QLKhoaHoc.Visible = true;
+                btn_QLLopHoc.Visible = true;
+                btn_QL_ThuChi.Visible = true;
+                btn_LichHoc.Visible = true;
+                btn_TongQuan.Visible = true;
+            }
+            else
+            {
+                if(userRole== DungChung.nhanVienHocVuRole)
+                {
+                    btn_QuanLyHoaCu.Visible = false;
+                    btn_QuanLyGiaoVien.Visible = true;
+                    btn_QLHocVien.Visible = true;
+                    btn_QLKhoaHoc.Visible = true;
+                    btn_QLLopHoc.Visible = true;
+                    btn_QL_ThuChi.Visible = false;
+                    btn_LichHoc.Visible = true;
+                    btn_TongQuan.Visible = true;
+                }
+                else if(userRole== DungChung.nhanVienKhoRole)
+                {
+                    btn_QuanLyHoaCu.Visible = true;
+                    btn_QuanLyGiaoVien.Visible = false;
+                    btn_QLHocVien.Visible = false;
+                    btn_QLKhoaHoc.Visible = false;
+                    btn_QLLopHoc.Visible = false;
+                    btn_QL_ThuChi.Visible = false;
+                    btn_LichHoc.Visible = false;
+                    btn_TongQuan.Visible = true;
+                }
+            }
+        }
 
         private void LoadUserControl(UserControl uc)
         {
