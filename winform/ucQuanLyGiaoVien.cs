@@ -16,16 +16,15 @@ namespace winform
     {
         public class GiaoVienDTO
         {
-            public int Id { get; set; } // Map với "id"
+            public int Id { get; set; }
             public string TenGV { get; set; }
             public int? SoNamKinhNghiem { get; set; }
             public string Sdt { get; set; }
             public DateTime? NgaySinh { get; set; }
             public bool TrangThai { get; set; }
-            public string Avatar { get; set; } // Đường dẫn ảnh relative
+            public string Avatar { get; set; }
         }
 
-        // DTO cho Lịch dạy (Cấu trúc lồng nhau trả về từ API GroupBy)
         public class LichDayGroupDTO
         {
             public DateTime NgayDay { get; set; }
@@ -41,19 +40,17 @@ namespace winform
             public TimeSpan ThoiGianKetThuc { get; set; }
         }
 
-        // --- VARIABLES ---
         private List<GiaoVienDTO> _originalList;
         private int _selectedTeacherId = -1;
-        private string _currentAvatarPath = null; // Lưu đường dẫn file ảnh mới chọn (nếu có)
+        private string _currentAvatarPath = null;
 
         public ucQuanLyGiaoVien()
         {
             InitializeComponent();
-            numKinhNghiem.ResetText();
             InitializeGrid();
             SetupEvents();
+            SetupValidation();
             LoadData();
-            
         }
 
         private void InitializeGrid()
@@ -61,36 +58,57 @@ namespace winform
             dgvGiaoVien.Columns.Clear();
             dgvGiaoVien.AutoGenerateColumns = false;
 
-            // Cột ID (Ẩn)
-            dgvGiaoVien.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", DataPropertyName = "Id", Visible = false });
-
-            // Cột Tên
+            dgvGiaoVien.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", DataPropertyName = "Id", HeaderText = "Mã GV", Width = 80 });
             dgvGiaoVien.Columns.Add(new DataGridViewTextBoxColumn { Name = "TenGV", DataPropertyName = "TenGV", HeaderText = "Họ Tên", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-
-            // Cột SĐT
             dgvGiaoVien.Columns.Add(new DataGridViewTextBoxColumn { Name = "Sdt", DataPropertyName = "Sdt", HeaderText = "SĐT", Width = 100 });
         }
 
         private void SetupEvents()
         {
-            btnAddGV.Click += (s, e) =>
-            {
-                // Mở form thêm mới (Bạn cần tạo form này tương tự form chi tiết hoặc dùng chung logic)
-                // Ở đây demo refresh lại
-                LoadData();
-            };
-
+            btnAddGV.Click += (s, e) => { ResetForm(); };
             txtSearch.TextChanged += (s, e) => FilterList();
             dgvGiaoVien.CellClick += DgvGiaoVien_CellClick;
-
             btnUploadImg.Click += BtnUploadImg_Click;
             btnLuu.Click += BtnLuu_Click;
             btnXoa.Click += BtnXoa_Click;
-
             btnXuatExcel.Click += BtnXuatExcel_Click;
         }
 
-        // --- KHU VỰC 1: DANH SÁCH (LEFT) ---
+        private void SetupValidation()
+        {
+            // Tên chỉ cho phép chữ và khoảng trắng
+            txtTenGV.KeyPress += (s, e) =>
+            {
+                if (!char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar) && !char.IsControl(e.KeyChar))
+                {
+                    e.Handled = true;
+                    MessageBox.Show("Tên chỉ được nhập chữ cái!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            };
+
+            // SĐT chỉ cho phép số
+            txtSDT.KeyPress += (s, e) =>
+            {
+                if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+                {
+                    e.Handled = true;
+                    MessageBox.Show("Số điện thoại chỉ được nhập số!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            };
+
+            // Kinh nghiệm chỉ cho phép số
+            txtKinhNghiem.KeyPress += (s, e) =>
+            {
+                if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+                {
+                    e.Handled = true;
+                    MessageBox.Show("Kinh nghiệm chỉ được nhập số!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            };
+
+            // Giới hạn độ dài SĐT
+            txtSDT.MaxLength = 10;
+        }
 
         private async void LoadData()
         {
@@ -113,8 +131,12 @@ namespace winform
         private void FilterList()
         {
             if (_originalList == null) return;
-            string key = txtSearch.Text.ToLower();
-            var list = _originalList.Where(x => x.TenGV.ToLower().Contains(key) || x.Sdt.Contains(key)).ToList();
+            string key = txtSearch.Text.ToLower().Trim();
+            var list = _originalList.Where(x =>
+                x.TenGV.ToLower().Contains(key) ||
+                x.Sdt.Contains(key) ||
+                x.Id.ToString().Contains(key) // Tìm theo ID
+            ).ToList();
             dgvGiaoVien.DataSource = list;
         }
 
@@ -122,39 +144,32 @@ namespace winform
         {
             if (e.RowIndex < 0) return;
 
-            // Lấy object từ dòng chọn
             var item = (GiaoVienDTO)dgvGiaoVien.Rows[e.RowIndex].DataBoundItem;
             _selectedTeacherId = item.Id;
 
-            // 1. Đổ dữ liệu vào Panel Giữa (Chi tiết)
+            txtMaGV.Text = item.Id.ToString();
             txtTenGV.Text = item.TenGV;
             txtSDT.Text = item.Sdt;
             dtpNgaySinh.Value = item.NgaySinh ?? DateTime.Now;
-            numKinhNghiem.Value = item.SoNamKinhNghiem ?? 0;
+            txtKinhNghiem.Text = (item.SoNamKinhNghiem ?? 0).ToString();
 
-            // Load Ảnh
             if (!string.IsNullOrEmpty(item.Avatar))
             {
-                // Giả sử API trả về đường dẫn relative "/image/teacher/abc.jpg"
-                // Cần ghép với BaseURL (VD: http://localhost:5000)
-                // Bạn cần đảm bảo biến DungChung.ApiBaseUrl chứa domain server
                 string fullUrl = DungChung.BaseUrlImage + item.Avatar;
                 try { picAvatar.Load(fullUrl); }
-                catch { picAvatar.Image = null; } // Nếu lỗi link thì để trống
+                catch { picAvatar.Image = null; }
             }
             else
             {
-                picAvatar.Image = null; // Hoặc set ảnh mặc định
+                picAvatar.Image = null;
             }
-            _currentAvatarPath = null; // Reset biến chọn ảnh mới
+            _currentAvatarPath = null;
 
-            // 2. Load dữ liệu vào Panel Phải (Lịch dạy)
             LoadLichDay(_selectedTeacherId);
-            btnLuu.Text = "Lưu Thay Đổi";
+            btnLuu.Text = "Cập Nhật";
             btnXoa.Enabled = true;
+            txtMaGV.Enabled = false;
         }
-
-        // --- KHU VỰC 2: CHI TIẾT & UPDATE (MIDDLE) ---
 
         private void BtnUploadImg_Click(object sender, EventArgs e)
         {
@@ -163,17 +178,99 @@ namespace winform
             if (op.ShowDialog() == DialogResult.OK)
             {
                 picAvatar.Image = Image.FromFile(op.FileName);
-                _currentAvatarPath = op.FileName; // Lưu đường dẫn để tý gửi lên server
+                _currentAvatarPath = op.FileName;
             }
         }
 
-        
-        
+        private async void BtnLuu_Click(object sender, EventArgs e)
+        {
+            // Validation
+            if (string.IsNullOrWhiteSpace(txtTenGV.Text))
+            {
+                MessageBox.Show("Vui lòng nhập họ tên!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtTenGV.Focus();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtSDT.Text))
+            {
+                MessageBox.Show("Vui lòng nhập số điện thoại!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtSDT.Focus();
+                return;
+            }
+
+            if (txtSDT.Text.Length < 10)
+            {
+                MessageBox.Show("Số điện thoại phải đủ 10 số!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtSDT.Focus();
+                return;
+            }
+
+            // Kiểm tra tuổi >= 18
+            var age = DateTime.Now.Year - dtpNgaySinh.Value.Year;
+            if (dtpNgaySinh.Value > DateTime.Now.AddYears(-age)) age--;
+
+            if (age < 18)
+            {
+                MessageBox.Show("Giáo viên phải từ 18 tuổi trở lên!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpNgaySinh.Focus();
+                return;
+            }
+
+            using (var content = new MultipartFormDataContent())
+            {
+                content.Add(new StringContent(txtTenGV.Text), "TenGv");
+                content.Add(new StringContent(txtSDT.Text), "Sdt");
+                content.Add(new StringContent(dtpNgaySinh.Value.ToString("yyyy-MM-dd")), "NgaySinh");
+
+                int kinhNghiem = 0;
+                int.TryParse(txtKinhNghiem.Text, out kinhNghiem);
+                content.Add(new StringContent(kinhNghiem.ToString()), "SoNamKinhNghiem");
+
+                if (_currentAvatarPath != null)
+                {
+                    var fileStream = File.OpenRead(_currentAvatarPath);
+                    var fileContent = new StreamContent(fileStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                    content.Add(fileContent, "Avatar", Path.GetFileName(_currentAvatarPath));
+                }
+
+                try
+                {
+                    using (HttpClient client = new HttpClient())
+                    {
+                        HttpResponseMessage response;
+
+                        if (_selectedTeacherId == -1)
+                        {
+                            response = await client.PostAsync(DungChung.getUrl("QLGiaoVien/AddTeacher"), content);
+                        }
+                        else
+                        {
+                            response = await client.PutAsync(DungChung.getUrl($"QLGiaoVien/updateTeacher/{_selectedTeacherId}"), content);
+                        }
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            string action = (_selectedTeacherId == -1) ? "Thêm mới" : "Cập nhật";
+                            MessageBox.Show($"{action} thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            LoadData();
+                            ResetForm();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Thất bại: " + await response.Content.ReadAsStringAsync());
+                        }
+                    }
+                }
+                catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
+            }
+        }
 
         private async void BtnXoa_Click(object sender, EventArgs e)
         {
             if (_selectedTeacherId == -1) return;
-            if (MessageBox.Show("Bạn chắc chắn muốn xóa giáo viên này?", "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBox.Show("Bạn chắc chắn muốn xóa giáo viên này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 try
                 {
@@ -182,12 +279,9 @@ namespace winform
                         var response = await client.DeleteAsync(DungChung.getUrl($"QLGiaoVien/deleteTeacher/{_selectedTeacherId}"));
                         if (response.IsSuccessStatusCode)
                         {
-                            MessageBox.Show("Đã xóa thành công.");
+                            MessageBox.Show("Đã xóa thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             LoadData();
-                            // Reset form
-                            txtTenGV.Clear(); txtSDT.Clear(); picAvatar.Image = null;
-                            _selectedTeacherId = -1;
-                            treeLichDay.Nodes.Clear();
+                            ResetForm();
                         }
                     }
                 }
@@ -195,11 +289,19 @@ namespace winform
             }
         }
 
-        // --- KHU VỰC 3: LỊCH DẠY (RIGHT) ---
-
         private async void LoadLichDay(int giaoVienId)
         {
             treeLichDay.Nodes.Clear();
+
+            // Tùy chỉnh style cho TreeView
+            treeLichDay.Font = new Font("Segoe UI", 10);
+            treeLichDay.ItemHeight = 35;
+            treeLichDay.Indent = 20;
+            treeLichDay.ShowLines = false;
+            treeLichDay.ShowPlusMinus = false;
+            treeLichDay.FullRowSelect = true;
+            treeLichDay.BackColor = Color.FromArgb(250, 251, 252);
+
             try
             {
                 using (HttpClient client = new HttpClient())
@@ -210,41 +312,73 @@ namespace winform
                         var json = await response.Content.ReadAsStringAsync();
                         var lichDayData = JsonConvert.DeserializeObject<List<LichDayGroupDTO>>(json);
 
-                        // Populate TreeView
+                        if (lichDayData == null || lichDayData.Count == 0)
+                        {
+                            TreeNode emptyNode = new TreeNode("Chưa có lịch dạy nào");
+                            emptyNode.ForeColor = Color.FromArgb(149, 165, 166);
+                            emptyNode.NodeFont = new Font("Segoe UI", 10, FontStyle.Italic);
+                            treeLichDay.Nodes.Add(emptyNode);
+                            return;
+                        }
+
                         foreach (var ngay in lichDayData)
                         {
-                            // Tạo Node cha: Ngày tháng
-                            TreeNode dayNode = new TreeNode($"Ngày {ngay.NgayDay.ToString("dd/MM/yyyy")}");
-                            dayNode.NodeFont = new Font("Segoe UI", 10, FontStyle.Bold);
-                            dayNode.ForeColor = Color.DarkBlue;
+                            // Node ngày với style đẹp hơn
+                            string thuText = GetThuText(ngay.NgayDay.DayOfWeek);
+                            TreeNode dayNode = new TreeNode($"{thuText}, {ngay.NgayDay.ToString("dd/MM/yyyy")} ({ngay.DanhSachLop.Count} lớp)");
+                            dayNode.NodeFont = new Font("Segoe UI", 11, FontStyle.Bold);
+                            dayNode.ForeColor = Color.FromArgb(41, 128, 185);
+                            dayNode.BackColor = Color.FromArgb(236, 240, 241);
 
-                            // Tạo Node con: Các lớp trong ngày
                             foreach (var lop in ngay.DanhSachLop)
                             {
+                                // Node chi tiết lớp học
                                 string timeInfo = $"{lop.ThoiGianBatDau.ToString(@"hh\:mm")} - {lop.ThoiGianKetThuc.ToString(@"hh\:mm")}";
-                                string content = $"{timeInfo} | {lop.TenLopHoc} ({lop.PhongHoc})";
-                                dayNode.Nodes.Add(content);
+                                string content = $"     {timeInfo}  |  {lop.TenLopHoc}  |  {lop.PhongHoc}";
+
+                                TreeNode classNode = new TreeNode(content);
+                                classNode.ForeColor = Color.FromArgb(52, 73, 94);
+                                classNode.NodeFont = new Font("Segoe UI", 9);
+
+                                dayNode.Nodes.Add(classNode);
                             }
 
                             treeLichDay.Nodes.Add(dayNode);
                         }
-                        treeLichDay.ExpandAll(); // Mở rộng hết để xem
+
+                        treeLichDay.ExpandAll();
                     }
                 }
             }
-            catch { /* Xử lý lỗi thầm lặng hoặc log */ }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi tải lịch dạy: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string GetThuText(DayOfWeek dayOfWeek)
+        {
+            switch (dayOfWeek)
+            {
+                case DayOfWeek.Monday: return "Thứ Hai";
+                case DayOfWeek.Tuesday: return "Thứ Ba";
+                case DayOfWeek.Wednesday: return "Thứ Tư";
+                case DayOfWeek.Thursday: return "Thứ Năm";
+                case DayOfWeek.Friday: return "Thứ Sáu";
+                case DayOfWeek.Saturday: return "Thứ Bảy";
+                case DayOfWeek.Sunday: return "Chủ Nhật";
+                default: return "";
+            }
         }
 
         private async void BtnXuatExcel_Click(object sender, EventArgs e)
         {
             if (_selectedTeacherId == -1 || treeLichDay.Nodes.Count == 0)
             {
-                MessageBox.Show("Vui lòng chọn giáo viên có lịch dạy để xuất Excel.");
+                MessageBox.Show("Vui lòng chọn giáo viên có lịch dạy để xuất Excel.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // Gọi lại API lấy dữ liệu (hoặc lưu biến toàn cục khi LoadLichDay để tái sử dụng)
-            // Ở đây gọi lại cho chắc chắn dữ liệu mới nhất
             try
             {
                 List<LichDayGroupDTO> dataExport = null;
@@ -262,7 +396,7 @@ namespace winform
 
                 SaveFileDialog sfd = new SaveFileDialog();
                 sfd.Filter = "Excel Workbook|*.xlsx";
-                sfd.FileName = $"LichDay_{txtTenGV.Text}_{DateTime.Now:yyyyMMdd}.xlsx";
+                sfd.FileName = $"LichDay_GV{txtMaGV.Text}_{DateTime.Now:yyyyMMdd}.xlsx";
 
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
@@ -270,25 +404,24 @@ namespace winform
                     {
                         var ws = workbook.Worksheets.Add("Lịch Dạy");
 
-                        // Header
                         ws.Cell(1, 1).Value = "Ngày Dạy";
                         ws.Cell(1, 2).Value = "Giờ Bắt Đầu";
                         ws.Cell(1, 3).Value = "Giờ Kết Thúc";
                         ws.Cell(1, 4).Value = "Tên Lớp";
                         ws.Cell(1, 5).Value = "Phòng Học";
 
-                        // Style Header
                         var rngHead = ws.Range("A1:E1");
                         rngHead.Style.Font.Bold = true;
-                        rngHead.Style.Fill.BackgroundColor = XLColor.CornflowerBlue;
+                        rngHead.Style.Fill.BackgroundColor = XLColor.FromArgb(52, 152, 219);
                         rngHead.Style.Font.FontColor = XLColor.White;
+                        rngHead.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                         int row = 2;
                         foreach (var group in dataExport)
                         {
                             foreach (var lop in group.DanhSachLop)
                             {
-                                ws.Cell(row, 1).Value = group.NgayDay;
+                                ws.Cell(row, 1).Value = group.NgayDay.ToString("dd/MM/yyyy");
                                 ws.Cell(row, 2).Value = lop.ThoiGianBatDau.ToString(@"hh\:mm");
                                 ws.Cell(row, 3).Value = lop.ThoiGianKetThuc.ToString(@"hh\:mm");
                                 ws.Cell(row, 4).Value = lop.TenLopHoc;
@@ -299,95 +432,31 @@ namespace winform
 
                         ws.Columns().AdjustToContents();
                         workbook.SaveAs(sfd.FileName);
-                        MessageBox.Show("Xuất Excel thành công!");
-                        //System.Diagnostics.Process.Start(sfd.FileName);
+                        MessageBox.Show("Xuất Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
             }
             catch (Exception ex) { MessageBox.Show("Lỗi xuất Excel: " + ex.Message); }
         }
+
         private void ResetForm()
         {
             _selectedTeacherId = -1;
             _currentAvatarPath = null;
 
+            txtMaGV.Clear();
             txtTenGV.Clear();
             txtSDT.Clear();
-            dtpNgaySinh.Value = DateTime.Now;
-            numKinhNghiem.Value = 0;
-            picAvatar.Image = null; // Hoặc ảnh mặc định
+            dtpNgaySinh.Value = DateTime.Now.AddYears(-25);
+            txtKinhNghiem.Text = "0";
+            picAvatar.Image = null;
 
-            btnLuu.Text = "Thêm Mới"; // Đổi text nút
-            btnXoa.Enabled = false;   // Ẩn nút xóa khi đang thêm mới
+            btnLuu.Text = "Thêm Mới";
+            btnXoa.Enabled = false;
+            txtMaGV.Enabled = false;
 
-            treeLichDay.Nodes.Clear(); // Xóa lịch dạy
+            treeLichDay.Nodes.Clear();
             txtTenGV.Focus();
-        }
-        private async void BtnLuu_Click(object sender, EventArgs e)
-        {
-            // Validate chung
-            if (string.IsNullOrWhiteSpace(txtTenGV.Text) || string.IsNullOrWhiteSpace(txtSDT.Text))
-            {
-                MessageBox.Show("Vui lòng nhập đủ Tên và SĐT.");
-                return;
-            }
-
-            // Chuẩn bị dữ liệu Multipart
-            using (var content = new MultipartFormDataContent())
-            {
-                content.Add(new StringContent(txtTenGV.Text), "TenGv");
-                content.Add(new StringContent(txtSDT.Text), "Sdt");
-                content.Add(new StringContent(dtpNgaySinh.Value.ToString("yyyy-MM-dd")), "NgaySinh");
-                content.Add(new StringContent(numKinhNghiem.Value.ToString()), "SoNamKinhNghiem");
-
-                if (_currentAvatarPath != null)
-                {
-                    var fileStream = File.OpenRead(_currentAvatarPath);
-                    var fileContent = new StreamContent(fileStream);
-                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-                    content.Add(fileContent, "Avatar", Path.GetFileName(_currentAvatarPath));
-                }
-
-                try
-                {
-                    using (HttpClient client = new HttpClient())
-                    {
-                        HttpResponseMessage response;
-
-                        // LOGIC QUAN TRỌNG: Kiểm tra xem là THÊM hay SỬA
-                        if (_selectedTeacherId == -1)
-                        {
-                            // --- THÊM MỚI ---
-                            response = await client.PostAsync(DungChung.getUrl("QLGiaoVien/AddTeacher"), content);
-                        }
-                        else
-                        {
-                            // --- CẬP NHẬT ---
-                            response = await client.PutAsync(DungChung.getUrl($"QLGiaoVien/updateTeacher/{_selectedTeacherId}"), content);
-                        }
-
-                        // Xử lý kết quả chung
-                        if (response.IsSuccessStatusCode)
-                        {
-                            string action = (_selectedTeacherId == -1) ? "Thêm mới" : "Cập nhật";
-                            MessageBox.Show($"{action} thành công!");
-
-                            LoadData(); // Reload danh sách bên trái
-                            ResetForm(); // Reset để sẵn sàng thêm người tiếp theo
-                        }
-                        else
-                        {
-                            MessageBox.Show("Thất bại: " + await response.Content.ReadAsStringAsync());
-                        }
-                    }
-                }
-                catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
-            }
-        }
-
-        private void btn_ResetFrm_Click(object sender, EventArgs e)
-        {
-            ResetForm();
         }
     }
 }
