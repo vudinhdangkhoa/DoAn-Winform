@@ -24,12 +24,52 @@ namespace winform
         private int _selectedKhuyenMaiId = -1;
 
         public dynamic KhuyenMaiData { get; set; }
+        // Thiết lập ngày mặc định và ràng buộc
+        private void SetupDateTimePickers()
+        {
+            // Đặt ngày bắt đầu là hôm nay
+            dtpStart.Value = DateTime.Now;
+
+            // Đặt ngày kết thúc là 1 tháng sau
+            dtpEnd.Value = DateTime.Now.AddMonths(1);
+
+            // Thiết lập giá trị tối thiểu
+            dtpStart.MinDate = DateTime.Now;
+            dtpEnd.MinDate = DateTime.Now;
+
+            // Gắn sự kiện ValueChanged để ràng buộc
+            dtpStart.ValueChanged += DtpStart_ValueChanged;
+            dtpEnd.ValueChanged += DtpEnd_ValueChanged;
+        }
+
+        private void DtpStart_ValueChanged(object sender, EventArgs e)
+        {
+            // Khi thay đổi ngày bắt đầu, đảm bảo ngày kết thúc không nhỏ hơn
+            if (dtpEnd.Value < dtpStart.Value)
+            {
+                dtpEnd.Value = dtpStart.Value;
+            }
+
+            // Cập nhật MinDate của dtpEnd
+            dtpEnd.MinDate = dtpStart.Value;
+        }
+
+        private void DtpEnd_ValueChanged(object sender, EventArgs e)
+        {
+            // Khi thay đổi ngày kết thúc, kiểm tra không được nhỏ hơn ngày bắt đầu
+            if (dtpEnd.Value < dtpStart.Value)
+            {
+                MessageBox.Show("Ngày kết thúc không được nhỏ hơn ngày bắt đầu!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpEnd.Value = dtpStart.Value;
+            }
+        }
         public ucQLKhuyenMai()
         {
             InitializeComponent();
             SetupEvents();
             InitializeGridColumns();
-             LoadData();
+            LoadData();
+            SetupDateTimePickers();
         }
 
         private async void LoadData()
@@ -40,13 +80,13 @@ namespace winform
             {
 
                 KhuyenMaiData = await UCQuanLyKhuyenMai.GetChuongTrinhKhuyenMai();
-                if(KhuyenMaiData != null)
+                if (KhuyenMaiData != null)
                 {
                     // Giả sử KhuyenMaiData là danh sách các khuyến mãi
                     dgvKhuyenMai.Rows.Clear();
                     foreach (var km in KhuyenMaiData)
                     {
-                        dgvKhuyenMai.Rows.Add(km.idKhuyenMai, km.tenKhuyenMai, km.phanTramKhuyenMai*100);
+                        dgvKhuyenMai.Rows.Add(km.idKhuyenMai, km.tenKhuyenMai, km.phanTramKhuyenMai * 100);
                     }
                 }
 
@@ -82,39 +122,28 @@ namespace winform
 
         private void SetupEvents()
         {
-            // 1. XỬ LÝ COMBOBOX
-            // Gỡ bỏ trước khi gán để tránh lặp nếu hàm SetupEvents bị gọi nhiều lần
+
             cboTargetType.SelectedIndexChanged -= CboTargetType_SelectedIndexChanged;
             cboTargetType.SelectedIndexChanged += CboTargetType_SelectedIndexChanged;
 
-            // 2. XỬ LÝ NÚT THÊM ÁP DỤNG (Nguyên nhân lỗi của bạn nằm ở đây)
-            // Dòng này sẽ cắt bỏ mọi sự kiện "ma" do Designer tự sinh ra
             btnAddTarget.Click -= BtnAddTarget_Click;
-            // Nếu bạn từng có hàm cũ tên btnAddTarget_Click_1, hãy uncomment dòng dưới để gỡ nó luôn
-            // btnAddTarget.Click -= btnAddTarget_Click_1; 
 
-            // Gán sự kiện chuẩn (đã có validate ngày tháng)
+
             btnAddTarget.Click += BtnAddTarget_Click;
 
             // 3. XỬ LÝ NÚT THÊM NHANH (Bên trái)
             btnQuickAdd.Click -= BtnQuickAdd_Click;
             btnQuickAdd.Click += BtnQuickAdd_Click;
 
-            // 4. XỬ LÝ GRIDVIEW (Bạn đang bị lặp ở đây)
             dgvKhuyenMai.CellClick -= DgvKhuyenMai_CellClick;
-            dgvKhuyenMai.CellClick -= dgvKhuyenMai_CellClick_1; // Gỡ bỏ hàm cũ do Designer sinh ra
-            dgvKhuyenMai.CellClick += DgvKhuyenMai_CellClick;   // Chỉ dùng hàm mới chuẩn
 
-            // 5. XỬ LÝ NÚT XÓA
-            // Lưu logic xóa vào biến delegate để có thể gỡ bỏ được (Lambda expression không gỡ được bằng -=)
-            // Tuy nhiên với lambda đơn giản như này, ta chấp nhận gán đè nếu không gọi SetupEvents nhiều lần.
-            // Để an toàn nhất, ta tách hàm xóa ra:
+            dgvKhuyenMai.CellClick += DgvKhuyenMai_CellClick;
+
+
             btnDeleteApplied.Click -= btnDeleteApplied_Click;
             btnDeleteApplied.Click += btnDeleteApplied_Click;
 
-            // 6. XỬ LÝ NÚT LƯU
-            // Lưu ý: Trong Designer bạn đang gán cho btnLuu, nhưng ở đây lại gán btnSaveAll?
-            // Hãy thống nhất dùng 1 nút. Tôi giả sử bạn dùng btnSaveAll cho logic API.
+
             btnSaveAll.Click -= btnLuu_Click;
             btnSaveAll.Click += btnLuu_Click;
         }
@@ -160,38 +189,73 @@ namespace winform
 
         private async void BtnQuickAdd_Click(object sender, EventArgs e)
         {
-            var AddKM = new
+            // Validate dữ liệu đầu vào
+            if (string.IsNullOrWhiteSpace(txtQuickName.Text))
             {
-                tenKhuyenMai = txtQuickName.Text,
-                phanTramKhuyenMai = numQuickPercent.Value / 100
-            };
-            using (HttpClient client = new HttpClient())
+                MessageBox.Show("Vui lòng nhập tên khuyến mãi!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (!decimal.TryParse(numQuickPercent.Text.Trim(), out decimal percent))
             {
-                string jsonContent = Newtonsoft.Json.JsonConvert.SerializeObject(AddKM);
-                var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
-                string url = DungChung.getUrl("XacThuc/DangNhap");
-
-                var response = await client.PostAsync(url, content);
-                var responseString = await response.Content.ReadAsStringAsync();
-
-                if (string.IsNullOrWhiteSpace(responseString) || responseString.Trim().StartsWith("<"))
+                MessageBox.Show("Phần trăm khuyến mãi phải là số!", "Cảnh báo",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            // Kiểm tra 1–100
+            if (percent <= 0 || percent > 100)
+            {
+                MessageBox.Show("Phần trăm khuyến mãi phải từ 1-100!", "Cảnh báo",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            try
+            {
+                var AddKM = new
                 {
-                    MessageBox.Show("Lỗi kết nối Server!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                    tenKhuyenMai = txtQuickName.Text.Trim(),
+                    phanTramKhuyenMai = percent / 100
+                };
 
-                var jObject = JObject.Parse(responseString);
+                using (HttpClient client = new HttpClient())
+                {
+                    string jsonContent = Newtonsoft.Json.JsonConvert.SerializeObject(AddKM);
+                    var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
 
-                if (response.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Thêm khuyến mãi thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    LoadData();
+                    // Sửa URL đúng endpoint
+                    string url = DungChung.getUrl("QLKhuyenMai/AddKhuyenMai");
+
+                    var response = await client.PostAsync(url, content);
+                    var responseString = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrWhiteSpace(responseString) || responseString.Trim().StartsWith("<"))
+                    {
+                        MessageBox.Show("Lỗi kết nối Server!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Thêm khuyến mãi thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // Clear dữ liệu sau khi thêm thành công
+                        txtQuickName.Text = "";
+
+
+                        // Reload lại danh sách
+                        LoadData();
+                    }
+                    else
+                    {
+                        var jObject = JObject.Parse(responseString);
+                        string errorMessage = jObject["message"]?.ToString() ?? "Đã xảy ra lỗi.";
+                        MessageBox.Show(errorMessage, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
-                else
-                {
-                    string errorMessage = jObject["message"]?.ToString() ?? "Đã xảy ra lỗi.";
-                    MessageBox.Show(errorMessage, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi thêm khuyến mãi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -208,7 +272,7 @@ namespace winform
                 MessageBox.Show("Ngày bắt đầu không được lớn hơn ngày kết thúc!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if(txtSL.Text.Trim() == "" || !int.TryParse(txtSL.Text.Trim(), out int slValue) || slValue <= 0)
+            if (txtSL.Text.Trim() == "" || !int.TryParse(txtSL.Text.Trim(), out int slValue) || slValue <= 0)
             {
                 MessageBox.Show("Số lượng phải là số nguyên dương!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -221,7 +285,7 @@ namespace winform
             int id = selectedItem.Id;
             string start = dtpStart.Value.ToString("yyyy-MM-dd"); // Format chuẩn
             string end = dtpEnd.Value.ToString("yyyy-MM-dd");
-            int sl= txtSL.Text != "" ? int.Parse( txtSL.Text) : 10;
+            int sl = txtSL.Text != "" ? int.Parse(txtSL.Text) : 10;
             // 3. Kiểm tra trùng lặp trên lưới (UX)
             foreach (DataGridViewRow row in dgvAppliedList.Rows)
             {
@@ -240,7 +304,7 @@ namespace winform
 
             // 4. Thêm vào Grid (Lưu Type gốc vào Tag hoặc cột ẩn nếu cần, ở đây tôi dùng cột Type hiển thị)
             // Cột cấu hình: Type, Name, StartDate, EndDate, ObjId
-            int index = dgvAppliedList.Rows.Add(typeDisplay,sl, name, start, end, id);
+            int index = dgvAppliedList.Rows.Add(typeDisplay, sl, name, start, end, id);
 
             // Lưu thêm thông tin loại (KhoaHoc/HocCu) vào Tag của dòng để lúc Lưu dễ xử lý
             dgvAppliedList.Rows[index].Tag = type;
@@ -250,7 +314,6 @@ namespace winform
         {
             if (e.RowIndex >= 0)
             {
-                // Lấy ID từ cột 0 (Cột Id ẩn đã cấu hình ở InitializeGridColumns)
                 var cellId = dgvKhuyenMai.Rows[e.RowIndex].Cells["Id"].Value;
                 var cellTen = dgvKhuyenMai.Rows[e.RowIndex].Cells["Ten"].Value;
                 var cellPercent = dgvKhuyenMai.Rows[e.RowIndex].Cells["Percent"].Value;
@@ -259,12 +322,11 @@ namespace winform
                 {
                     _selectedKhuyenMaiId = Convert.ToInt32(cellId);
 
-                    // Hiển thị thông tin lên Header bên phải (Optional)
+                    // Hiển thị thông tin (đã nhân 100 từ LoadData rồi nên không cần nhân nữa)
                     txtTenKM.Text = cellTen.ToString();
-                    lblInfoPercent.Text = (Convert.ToDouble(cellPercent)).ToString() + "%";
+                    lblInfoPercent.Text = Convert.ToDouble(cellPercent).ToString() + "%";
 
-                    // TODO: Nếu muốn hiện các item ĐÃ áp dụng trước đó, cần gọi 1 API GetDetails tại đây
-                    // Hiện tại ta clear lưới bên phải để chuẩn bị thêm mới
+                    // Clear lưới bên phải để chuẩn bị thêm mới
                     dgvAppliedList.Rows.Clear();
                 }
             }
@@ -395,22 +457,22 @@ namespace winform
 
             try
             {
-                if(_selectedKhuyenMaiId <= 0)
+                if (_selectedKhuyenMaiId <= 0)
                 {
                     MessageBox.Show("Vui lòng chọn chương trình khuyến mãi bên trái trước!", "Cảnh báo");
                     return;
                 }
-                if(txtTenKM.Text.Trim() == "")
+                if (txtTenKM.Text.Trim() == "")
                 {
                     MessageBox.Show("Tên khuyến mãi không được để trống!", "Cảnh báo");
                     return;
                 }
-                if(lblInfoPercent.Text.Trim() == "")
+                if (lblInfoPercent.Text.Trim() == "")
                 {
                     MessageBox.Show("Phần trăm khuyến mãi không được để trống!", "Cảnh báo");
                     return;
                 }
-                var updateKM= new
+                var updateKM = new
                 {
                     tenKhuyenMai = txtTenKM.Text,
                     phanTramKhuyenMai = (float)Math.Round(double.Parse(lblInfoPercent.Text.Replace("%", "")) / 100.0, 2)
@@ -418,9 +480,9 @@ namespace winform
                 string jsonContent = Newtonsoft.Json.JsonConvert.SerializeObject(updateKM);
                 var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
                 string url = DungChung.getUrl("QLKhuyenMai/updateKhuyenMai/" + _selectedKhuyenMaiId);
-                using(HttpClient client = new HttpClient())
+                using (HttpClient client = new HttpClient())
                 {
-                    var response =  client.PutAsync(url, content).Result;
+                    var response = client.PutAsync(url, content).Result;
                     var responseString = response.Content.ReadAsStringAsync().Result;
                     if (response.IsSuccessStatusCode)
                     {
@@ -443,38 +505,15 @@ namespace winform
         private void btnHuyChinhSua_Click(object sender, EventArgs e)
         {
 
-            txtTenKM.Text="";
+            txtTenKM.Text = "";
             lblInfoPercent.Text = "";
             _selectedKhuyenMaiId = -1;
         }
 
-        private void dgvKhuyenMai_CellClick_1(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                // Lấy ID từ cột 0 (Cột Id ẩn đã cấu hình ở InitializeGridColumns)
-                var cellId = dgvKhuyenMai.Rows[e.RowIndex].Cells["Id"].Value;
-                var cellTen = dgvKhuyenMai.Rows[e.RowIndex].Cells["Ten"].Value;
-                var cellPercent = dgvKhuyenMai.Rows[e.RowIndex].Cells["Percent"].Value;
-
-                if (cellId != null)
-                {
-                    _selectedKhuyenMaiId = Convert.ToInt32(cellId);
-
-                    // Hiển thị thông tin lên Header bên phải (Optional)
-                    txtTenKM.Text = cellTen.ToString();
-                    lblInfoPercent.Text = (Convert.ToDouble(cellPercent) * 100).ToString() + "%";
-
-                    // TODO: Nếu muốn hiện các item ĐÃ áp dụng trước đó, cần gọi 1 API GetDetails tại đây
-                    // Hiện tại ta clear lưới bên phải để chuẩn bị thêm mới
-                    dgvAppliedList.Rows.Clear();
-                }
-            }
-        }
 
         private void btnQLKMApDung_Click(object sender, EventArgs e)
         {
-            frmQLCacApDungKM f= new frmQLCacApDungKM();
+            frmQLCacApDungKM f = new frmQLCacApDungKM();
             f.ShowDialog();
         }
     }

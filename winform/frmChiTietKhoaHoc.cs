@@ -56,6 +56,14 @@ namespace winform
             {
                 await LoadDataDetail(); // Load dữ liệu khóa học nếu là sửa
             }
+            else
+            {
+                // Khi thêm mới, load mã khóa học tiếp theo
+                await LoadNextKhoaHocId();
+                numSoBuoi.ResetText();
+                numHocPhi.ResetText();
+            }
+
         }
 
         private async System.Threading.Tasks.Task LoadChuyenMon()
@@ -84,10 +92,6 @@ namespace winform
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    // Cần API GetDetail (hoặc lấy từ list truyền sang)
-                    // Ở đây tôi giả định bạn có API GetById hoặc bạn lọc từ list bên ngoài truyền vào
-                    // Nếu chưa có API GetById, bạn có thể truyền object DTO từ form cha sang constructor này cũng được.
-                    // Tạm thời demo gọi API GetById (Bạn cần bổ sung API này nếu chưa có)
                     var res = await client.GetAsync(DungChung.getUrl($"KhoaHoc/GetKhoaHocById/{_idKhoaHoc}"));
 
                     if (res.IsSuccessStatusCode)
@@ -96,10 +100,11 @@ namespace winform
                         _currentData = JsonConvert.DeserializeObject<KhoaHocChiTietDTO>(json);
 
                         // Binding Data
+                        txtMaKhoaHoc.Text = _currentData.IdKhoaHoc.ToString(); // Hiển thị mã khóa học
                         txtTenKhoaHoc.Text = _currentData.TenKhoaHoc;
                         numHocPhi.Value = (decimal)_currentData.HocPhi;
                         numSoBuoi.Value = _currentData.SoLuongBuoi;
-                        cboChuyenMon.SelectedValue = _currentData.IdChuyenMon; // Nếu API GetById chưa trả về IdChuyenMon thì cần bổ sung
+                        cboChuyenMon.SelectedValue = _currentData.IdChuyenMon;
 
                         rtbMoTa.Text = _currentData.MoTa;
                         rtbMucTieu.Text = _currentData.MucTieu;
@@ -114,9 +119,32 @@ namespace winform
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi tải dữ liệu: " + ex.Message);
+            }
         }
-
+        private async System.Threading.Tasks.Task LoadNextKhoaHocId()
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var res = await client.GetAsync(DungChung.getUrl("KhoaHoc/GetNextKhoaHocId"));
+                    if (res.IsSuccessStatusCode)
+                    {
+                        var json = await res.Content.ReadAsStringAsync();
+                        var result = JsonConvert.DeserializeObject<dynamic>(json);
+                        txtMaKhoaHoc.Text = result.nextId.ToString();
+                    }
+                }
+            }
+            catch
+            {
+                txtMaKhoaHoc.Text = "";
+                txtMaKhoaHoc.PlaceholderText = "Mã sẽ được tạo tự động";
+            }
+        }
         private void BtnChonAnh_Click(object sender, EventArgs e)
         {
             OpenFileDialog op = new OpenFileDialog();

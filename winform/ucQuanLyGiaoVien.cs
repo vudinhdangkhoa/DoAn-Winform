@@ -49,9 +49,11 @@ namespace winform
         public ucQuanLyGiaoVien()
         {
             InitializeComponent();
+            numKinhNghiem.ResetText();
             InitializeGrid();
             SetupEvents();
             LoadData();
+            
         }
 
         private void InitializeGrid()

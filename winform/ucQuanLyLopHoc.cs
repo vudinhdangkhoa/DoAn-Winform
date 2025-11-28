@@ -38,6 +38,7 @@ namespace winform
 
         private List<LopHocViewDTO> _originalList;
         private List<KhoaHocSimpleDTO> _listKhoaHoc;
+        private bool _isInit = false;
 
         public ucQuanLyLopHoc()
         {
@@ -51,37 +52,22 @@ namespace winform
 
         private void InitializeGrid()
         {
+            // Vì đã định nghĩa cột trong Designer, ta chỉ cần cấu hình này
             dgvLopHoc.AutoGenerateColumns = false;
-            dgvLopHoc.Columns.Clear();
 
-            dgvLopHoc.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", DataPropertyName = "IdLopHoc", Visible = false });
-            dgvLopHoc.Columns.Add(new DataGridViewTextBoxColumn { Name = "Ten", DataPropertyName = "TenLopHoc", HeaderText = "Tên Lớp", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            dgvLopHoc.Columns.Add(new DataGridViewTextBoxColumn { Name = "Khoa", DataPropertyName = "KhoaHoc", HeaderText = "Khóa Học", Width = 200 });
-            dgvLopHoc.Columns.Add(new DataGridViewTextBoxColumn { Name = "GV", DataPropertyName = "TenGiaoVien", HeaderText = "Giảng Viên", Width = 150 });
-            dgvLopHoc.Columns.Add(new DataGridViewTextBoxColumn { Name = "Phong", DataPropertyName = "Phong", HeaderText = "Phòng", Width = 100 });
-
-            dgvLopHoc.Columns.Add(new DataGridViewTextBoxColumn { Name = "SiSo", HeaderText = "Sĩ Số", Width = 80 });
-            dgvLopHoc.Columns.Add(new DataGridViewTextBoxColumn { Name = "NgayKG", DataPropertyName = "NgayKhaiGiang", HeaderText = "Khai Giảng", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" } });
+            // Format cột Ngày
+            dgvLopHoc.Columns["ngayKG"].DefaultCellStyle.Format = "dd/MM/yyyy";
 
             // Custom cột Sĩ Số (HV/Max)
             dgvLopHoc.CellFormatting += (s, e) =>
             {
-                if (dgvLopHoc.Columns[e.ColumnIndex].Name == "SiSo" && e.RowIndex >= 0)
+                if (dgvLopHoc.Columns[e.ColumnIndex].Name == "siSo" && e.RowIndex >= 0)
                 {
                     var item = (LopHocViewDTO)dgvLopHoc.Rows[e.RowIndex].DataBoundItem;
                     if (item != null)
                         e.Value = $"{item.SoLuongHv}/{item.SoLuongToiDa}";
                 }
             };
-
-            // Nút Chi tiết
-            var btnDetail = new DataGridViewButtonColumn();
-            btnDetail.Name = "btnDetail";
-            btnDetail.HeaderText = "";
-            btnDetail.Text = "Chi tiết";
-            btnDetail.UseColumnTextForButtonValue = true;
-            btnDetail.Width = 80;
-            dgvLopHoc.Columns.Add(btnDetail);
         }
 
         private void SetupEvents()
@@ -97,6 +83,8 @@ namespace winform
         {
             try
             {
+                _isInit = false;
+
                 using (HttpClient client = new HttpClient())
                 {
                     // 1. Load Khoa Hoc for ComboBox
@@ -106,16 +94,14 @@ namespace winform
                         var jsonKH = await resKH.Content.ReadAsStringAsync();
                         _listKhoaHoc = JsonConvert.DeserializeObject<List<KhoaHocSimpleDTO>>(jsonKH);
 
-                        // Lưu trạng thái chọn cũ nếu có
-                        var oldSelection = cboLocKhoaHoc.SelectedValue;
+                        // THÊM MỤC MẶC ĐỊNH: "--- Tất cả khóa học ---"
+                        _listKhoaHoc.Insert(0, new KhoaHocSimpleDTO { IdKhoaHoc = -1, TenKhoaHoc = "--- Tất cả khóa học ---" });
 
                         cboLocKhoaHoc.DataSource = _listKhoaHoc;
                         cboLocKhoaHoc.DisplayMember = "TenKhoaHoc";
                         cboLocKhoaHoc.ValueMember = "IdKhoaHoc";
 
-                        // Restore selection or reset
-                        if (oldSelection != null) cboLocKhoaHoc.SelectedValue = oldSelection;
-                        else cboLocKhoaHoc.SelectedIndex = -1;
+                        cboLocKhoaHoc.SelectedIndex = 0; // Mặc định chọn tất cả
                     }
 
                     // 2. Load Lop Hoc
@@ -124,6 +110,8 @@ namespace winform
                     {
                         var jsonLH = await resLH.Content.ReadAsStringAsync();
                         _originalList = JsonConvert.DeserializeObject<List<LopHocViewDTO>>(jsonLH);
+
+                        _isInit = true;
                         FilterData();
                     }
                 }
@@ -133,15 +121,17 @@ namespace winform
 
         private void FilterData()
         {
-            if (_originalList == null) return;
+            if (_originalList == null || !_isInit) return;
             var query = _originalList.AsQueryable();
 
+            // Lọc theo tên
             if (!string.IsNullOrWhiteSpace(txtSearch.Text))
             {
                 query = query.Where(x => x.TenLopHoc.ToLower().Contains(txtSearch.Text.ToLower()));
             }
 
-            if (cboLocKhoaHoc.SelectedIndex != -1 && cboLocKhoaHoc.SelectedValue is int idKhoa)
+            // Lọc theo khóa học (Bỏ qua nếu chọn -1 "Tất cả")
+            if (cboLocKhoaHoc.SelectedIndex != -1 && cboLocKhoaHoc.SelectedValue is int idKhoa && idKhoa != -1)
             {
                 query = query.Where(x => x.IdKhoaHoc == idKhoa);
             }
@@ -151,27 +141,22 @@ namespace winform
 
         private void BtnThemLop_Click(object sender, EventArgs e)
         {
-            // Mở form thêm mới (ID = -1)
             frmChiTietLopHoc f = new frmChiTietLopHoc(-1);
             if (f.ShowDialog() == DialogResult.OK)
             {
-                // Nếu thêm thành công -> Reload dữ liệu
-                _ = LoadData(); // Gọi bất đồng bộ mà không cần await ở event handler void
+                _ = LoadData();
             }
         }
 
         private void DgvLopHoc_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            // Kiểm tra click vào nút Chi tiết
             if (e.RowIndex >= 0 && dgvLopHoc.Columns[e.ColumnIndex].Name == "btnDetail")
             {
-                int id = Convert.ToInt32(dgvLopHoc.Rows[e.RowIndex].Cells["Id"].Value);
-
-                // Mở form chi tiết (ID > 0)
+                int id = Convert.ToInt32(dgvLopHoc.Rows[e.RowIndex].Cells["idLop"].Value);
                 frmChiTietLopHoc f = new frmChiTietLopHoc(id);
                 if (f.ShowDialog() == DialogResult.OK)
                 {
-                    _ = LoadData(); // Reload dữ liệu sau khi sửa
+                    _ = LoadData();
                 }
             }
         }

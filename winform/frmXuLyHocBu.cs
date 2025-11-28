@@ -16,18 +16,48 @@ namespace winform
     {
         private int _idLopHoc;
         private int _idLichHocCu;
+        private DateTime _ngayHocCu;
+        private DateTime _ngayKhaiGiang; // THÊM BIẾN LƯU NGÀY KHAI GIẢNG
+
         public class PhongHocDTO
         {
             public int IdPhong { get; set; }
             public string TenPhong { get; set; }
         }
 
-        public frmXuLyHocBu(int idLopHoc, int idLichHocCu, string infoBuoiCu = "")
+        // SỬA CONSTRUCTOR: THÊM THAM SỐ ngayKhaiGiang
+        public frmXuLyHocBu(int idLopHoc, int idLichHocCu, DateTime ngayKhaiGiang, string infoBuoiCu = "")
         {
             InitializeComponent();
             _idLopHoc = idLopHoc;
             _idLichHocCu = idLichHocCu;
+            _ngayKhaiGiang = ngayKhaiGiang; // LƯU NGÀY KHAI GIẢNG
             txtLichCu.Text = infoBuoiCu;
+
+            // Lấy ngày học cũ từ info
+            try
+            {
+                if (!string.IsNullOrEmpty(infoBuoiCu))
+                {
+                    var parts = infoBuoiCu.Split('|');
+                    if (parts.Length > 0)
+                    {
+                        _ngayHocCu = DateTime.ParseExact(parts[0].Trim(), "dd/MM/yyyy", null);
+                    }
+                    else
+                    {
+                        _ngayHocCu = DateTime.Now;
+                    }
+                }
+                else
+                {
+                    _ngayHocCu = DateTime.Now;
+                }
+            }
+            catch
+            {
+                _ngayHocCu = DateTime.Now;
+            }
 
             // Setup Events
             chkCoLichBu.CheckedChanged += (s, e) =>
@@ -39,33 +69,101 @@ namespace winform
                 btnKiemTraPhong.Enabled = chkCoLichBu.Checked;
             };
 
+            // SỬA: Validate ngày bù phải lớn hơn ngày khai giảng
+            dtpNgayBu.ValueChanged += (s, e) =>
+            {
+                if (dtpNgayBu.Value.Date < _ngayKhaiGiang.Date)
+                {
+                    MessageBox.Show(this,
+                        $"Ngày dạy bù không được nhỏ hơn ngày khai giảng ({_ngayKhaiGiang:dd/MM/yyyy})!",
+                        "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpNgayBu.Value = _ngayKhaiGiang.Date; // Set về ngày khai giảng
+                }
+
+                // Thêm kiểm tra không được nhỏ hơn ngày hiện tại
+                if (dtpNgayBu.Value.Date < DateTime.Now.Date)
+                {
+                    MessageBox.Show(this, "Ngày dạy bù không được nhỏ hơn ngày hiện tại!",
+                        "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpNgayBu.Value = DateTime.Now.Date;
+                }
+            };
+
             btnKiemTraPhong.Click += BtnKiemTraPhong_Click;
             btnLuu.Click += BtnLuu_Click;
             btnHuy.Click += (s, e) => this.Close();
 
-            // Mặc định thêm 1 tuần cho ngày bù
-            dtpNgayBu.Value = DateTime.Now.AddDays(7);
+            // SỬA: Set giá trị tối thiểu = MAX(ngày khai giảng, ngày hiện tại)
+            DateTime minDate = _ngayKhaiGiang.Date > DateTime.Now.Date
+                ? _ngayKhaiGiang.Date
+                : DateTime.Now.Date;
+
+            dtpNgayBu.MinDate = minDate;
+            dtpNgayBu.Value = minDate.AddDays(1); // Mặc định = min + 1 ngày
+
+            // Set giờ mặc định
+            dtpGioBatDau.Value = DateTime.Today.AddHours(15); // 15:00
+            dtpGioKetThuc.Value = DateTime.Today.AddHours(17); // 17:00
+
+            // Validate giờ
+            dtpGioBatDau.ValueChanged += ValidateTime;
+            dtpGioKetThuc.ValueChanged += ValidateTime;
         }
 
-        // API 1: Lấy danh sách phòng trống
+        private void ValidateTime(object sender, EventArgs e)
+        {
+            if (dtpGioBatDau.Value >= dtpGioKetThuc.Value)
+            {
+                MessageBox.Show(this, "Giờ bắt đầu phải nhỏ hơn giờ kết thúc!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                if (sender == dtpGioBatDau)
+                {
+                    dtpGioKetThuc.Value = dtpGioBatDau.Value.AddHours(2);
+                }
+                else
+                {
+                    dtpGioBatDau.Value = dtpGioKetThuc.Value.AddHours(-2);
+                }
+            }
+        }
+
         private async void BtnKiemTraPhong_Click(object sender, EventArgs e)
         {
+            // SỬA: Validate ngày bù >= ngày khai giảng
+            if (dtpNgayBu.Value.Date < _ngayKhaiGiang.Date)
+            {
+                MessageBox.Show(this,
+                    $"Ngày dạy bù không được nhỏ hơn ngày khai giảng ({_ngayKhaiGiang:dd/MM/yyyy})!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (dtpNgayBu.Value.Date < DateTime.Now.Date)
+            {
+                MessageBox.Show(this, "Ngày dạy bù không được nhỏ hơn ngày hiện tại!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (dtpGioBatDau.Value >= dtpGioKetThuc.Value)
+            {
+                MessageBox.Show(this, "Giờ bắt đầu phải nhỏ hơn giờ kết thúc!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             string date = dtpNgayBu.Value.ToString("yyyy-MM-dd");
             string start = dtpGioBatDau.Value.ToString("HH:mm:ss");
             string end = dtpGioKetThuc.Value.ToString("HH:mm:ss");
 
-            // Validate giờ
-            if (dtpGioBatDau.Value >= dtpGioKetThuc.Value)
-            {
-                MessageBox.Show("Giờ bắt đầu phải nhỏ hơn giờ kết thúc!");
-                return;
-            }
-
             try
             {
+                btnKiemTraPhong.Enabled = false;
+                btnKiemTraPhong.Text = "⏳ Đang tìm...";
+
                 using (HttpClient client = new HttpClient())
                 {
-                    // URL: QLLichHoc/GetPhongTrong?ngay=...&batDau=...&ketThuc=...
                     string url = DungChung.getUrl($"QLLichHoc/GetPhongTrong?ngay={date}&batDau={start}&ketThuc={end}");
                     var response = await client.GetAsync(url);
 
@@ -74,9 +172,10 @@ namespace winform
                         var json = await response.Content.ReadAsStringAsync();
                         var listPhong = JsonConvert.DeserializeObject<List<PhongHocDTO>>(json);
 
-                        if (listPhong.Count == 0)
+                        if (listPhong == null || listPhong.Count == 0)
                         {
-                            MessageBox.Show("Không có phòng nào trống vào giờ này!", "Hết phòng");
+                            MessageBox.Show(this, "Không có phòng nào trống vào giờ này!",
+                                "Hết phòng", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             cboPhongBu.DataSource = null;
                         }
                         else
@@ -84,31 +183,70 @@ namespace winform
                             cboPhongBu.DataSource = listPhong;
                             cboPhongBu.DisplayMember = "TenPhong";
                             cboPhongBu.ValueMember = "IdPhong";
-                            MessageBox.Show($"Đã tìm thấy {listPhong.Count} phòng trống.");
+                            MessageBox.Show(this, $"Đã tìm thấy {listPhong.Count} phòng trống.",
+                                "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
+                    }
+                    else
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        MessageBox.Show(this, "Lỗi: " + error, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
-            catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnKiemTraPhong.Text = "🔍 Lấy DS Phòng";
+                btnKiemTraPhong.Enabled = true;
+            }
         }
 
-        // API 2: Xác nhận đổi lịch
         private async void BtnLuu_Click(object sender, EventArgs e)
         {
-            // Nếu chỉ hủy mà không bù -> Cần logic API khác hoặc chỉnh API BaoNghiVaDayBu để chấp nhận null
-            // Ở đây giả định là luôn có dạy bù theo form của bạn
             if (chkCoLichBu.Checked)
             {
+                // SỬA: Validate ngày bù >= ngày khai giảng
+                if (dtpNgayBu.Value.Date < _ngayKhaiGiang.Date)
+                {
+                    MessageBox.Show(this,
+                        $"Ngày dạy bù không được nhỏ hơn ngày khai giảng ({_ngayKhaiGiang:dd/MM/yyyy})!",
+                        "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpNgayBu.Focus();
+                    return;
+                }
+
+                if (dtpNgayBu.Value.Date < DateTime.Now.Date)
+                {
+                    MessageBox.Show(this, "Ngày dạy bù không được nhỏ hơn ngày hiện tại!",
+                        "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpNgayBu.Focus();
+                    return;
+                }
+
+                if (dtpGioBatDau.Value >= dtpGioKetThuc.Value)
+                {
+                    MessageBox.Show(this, "Giờ bắt đầu phải nhỏ hơn giờ kết thúc!",
+                        "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpGioBatDau.Focus();
+                    return;
+                }
+
                 if (cboPhongBu.SelectedIndex == -1)
                 {
-                    MessageBox.Show("Vui lòng chọn phòng học (Nhấn 'Lấy DS Phòng' trước)");
+                    MessageBox.Show(this, "Vui lòng chọn phòng học!\n(Nhấn 'Lấy DS Phòng' để tìm phòng trống)",
+                        "Thiếu thông tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    btnKiemTraPhong.Focus();
                     return;
                 }
 
                 var payload = new
                 {
                     idLopHoc = _idLopHoc,
-                    idLichHoc = _idLichHocCu, // ID buổi cũ để hủy
+                    idLichHoc = _idLichHocCu,
                     ngayHoc = dtpNgayBu.Value,
                     thoiGianBatDau = dtpGioBatDau.Value.TimeOfDay,
                     thoiGianKetThuc = dtpGioKetThuc.Value.TimeOfDay,
@@ -117,6 +255,9 @@ namespace winform
 
                 try
                 {
+                    btnLuu.Enabled = false;
+                    btnLuu.Text = "⏳ Đang lưu...";
+
                     using (HttpClient client = new HttpClient())
                     {
                         string json = JsonConvert.SerializeObject(payload);
@@ -126,23 +267,47 @@ namespace winform
 
                         if (response.IsSuccessStatusCode)
                         {
-                            MessageBox.Show("Đổi lịch thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show(this, "Đổi lịch thành công!",
+                                "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            this.DialogResult = DialogResult.OK;
                             this.Close();
                         }
                         else
                         {
                             var err = await response.Content.ReadAsStringAsync();
-                            MessageBox.Show("Thất bại: " + err, "Lỗi trùng lịch", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(this, "Thất bại: " + err,
+                                "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
-                catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "Lỗi: " + ex.Message,
+                        "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    btnLuu.Text = "💾 Lưu";
+                    btnLuu.Enabled = true;
+                }
             }
             else
             {
-                // Trường hợp chỉ báo nghỉ (không bù) -> Bạn có thể gọi API UpdateLichHoc (set TrangThai=false) đơn giản
-                MessageBox.Show("Chức năng chỉ báo nghỉ (không bù) cần gọi API UpdateLichHoc cũ.");
+                var result = MessageBox.Show(this,
+                    "Bạn chỉ muốn báo nghỉ mà không dạy bù?\nBuổi học này sẽ bị hủy!",
+                    "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    MessageBox.Show(this, "Chức năng chỉ báo nghỉ (không bù) cần gọi API UpdateLichHoc.",
+                        "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
+        }
+
+        private void btnHuy_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

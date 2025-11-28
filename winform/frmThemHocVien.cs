@@ -20,26 +20,97 @@ namespace winform
         {
             InitializeComponent();
 
-            // Gán sự kiện
+            // =======================================================
+            // 1. CẤU HÌNH CHẶN NHẬP LIỆU (TUYỆT ĐỐI)
+            // Code này đảm bảo sự kiện chạy dù giao diện có bị lỗi link
+            // =======================================================
+
+            // --- A. Cấu hình ô TÊN PHỤ HUYNH (txtTenPH) ---
+            // Gỡ bỏ sự kiện cũ (để tránh trùng lặp) rồi gán mới
+            this.txtTenPH.KeyPress -= TxtTen_KeyPress;
+            this.txtTenPH.KeyPress += TxtTen_KeyPress;       // Chặn gõ phím số
+            this.txtTenPH.TextChanged -= TxtTen_TextChanged;
+            this.txtTenPH.TextChanged += TxtTen_TextChanged; // Chống Paste số
+
+            // --- B. Cấu hình ô SỐ ĐIỆN THOẠI (txtSdtPH) ---
+            this.txtSdtPH.MaxLength = 10;                    // Giới hạn 10 ký tự
+            this.txtSdtPH.KeyPress -= TxtSdtPH_KeyPress;
+            this.txtSdtPH.KeyPress += TxtSdtPH_KeyPress;     // Chặn gõ phím chữ
+            this.txtSdtPH.TextChanged -= TxtSdtPH_TextChanged;
+            this.txtSdtPH.TextChanged += TxtSdtPH_TextChanged; // Chống Paste chữ
+
+            // 2. Gán các sự kiện nút bấm
             this.Load += FrmThemHocVien_Load;
             this.btnThemDong.Click += BtnThemDong_Click;
             this.btnLuu.Click += BtnLuu_Click;
             this.btnHuy.Click += (s, e) => this.Close();
-            this.txtSdtPH.KeyPress += TxtSdtPH_KeyPress;
         }
 
-        private List<LopHocSimpleDTO> _danhSachLopHoc=new List<LopHocSimpleDTO>();
-        public dynamic dataKhoaHoc;
+        // =======================================================
+        // KHU VỰC XỬ LÝ LOGIC CHẶN (CORE)
+        // =======================================================
 
-        // Biến lưu dữ liệu để in (Được gán khi bấm nút Lưu)
+        // 1. TÊN PHỤ HUYNH: Cấm Tuyệt Đối Số
+        private void TxtTen_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Nếu ký tự gõ vào LÀ SỐ -> Chặn ngay lập tức (e.Handled = true)
+            if (char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void TxtTen_TextChanged(object sender, EventArgs e)
+        {
+            // Nếu lỡ Paste số vào -> Xóa sạch số ngay lập tức
+            if (txtTenPH.Text.Any(char.IsDigit))
+            {
+                int cursorIndex = txtTenPH.SelectionStart;
+                // Chỉ giữ lại các ký tự KHÔNG phải là số
+                txtTenPH.Text = new string(txtTenPH.Text.Where(c => !char.IsDigit(c)).ToArray());
+                // Đặt lại con trỏ chuột để không bị nhảy về đầu
+                if (cursorIndex > 0 && cursorIndex <= txtTenPH.Text.Length)
+                    txtTenPH.SelectionStart = cursorIndex - 1;
+                else
+                    txtTenPH.SelectionStart = txtTenPH.Text.Length;
+            }
+        }
+
+        // 2. SỐ ĐIỆN THOẠI: Cấm Tuyệt Đối Chữ
+        private void TxtSdtPH_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Nếu ký tự KHÔNG phải số VÀ KHÔNG phải phím xóa (Backspace) -> Chặn
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void TxtSdtPH_TextChanged(object sender, EventArgs e)
+        {
+            // Nếu lỡ Paste chữ vào -> Xóa sạch chữ
+            if (Regex.IsMatch(txtSdtPH.Text, "[^0-9]"))
+            {
+                int cursorIndex = txtSdtPH.SelectionStart;
+                txtSdtPH.Text = Regex.Replace(txtSdtPH.Text, "[^0-9]", "");
+
+                if (cursorIndex > 0 && cursorIndex <= txtSdtPH.Text.Length)
+                    txtSdtPH.SelectionStart = cursorIndex - 1;
+                else
+                    txtSdtPH.SelectionStart = txtSdtPH.Text.Length;
+            }
+        }
+        // =======================================================
+
+
+        private List<LopHocSimpleDTO> _danhSachLopHoc = new List<LopHocSimpleDTO>();
+        public dynamic dataKhoaHoc;
         private AddHocVienRequest _dataToPrint;
         private decimal _totalAmountToPrint;
 
-        // 1. KHI FORM LOAD: Tải danh sách lớp
         private async void FrmThemHocVien_Load(object sender, EventArgs e)
         {
             await LoadDataLopHoc();
-            // Thêm sẵn 1 dòng đầu tiên cho người dùng nhập luôn
             ThemDongHocVien();
         }
 
@@ -47,349 +118,189 @@ namespace winform
         {
             try
             {
-
-                // --------------------------------------------------------
-                dataKhoaHoc =await UCQuanLyHocVien.GetKhoaHoc();
-
+                dataKhoaHoc = await UCQuanLyHocVien.GetKhoaHoc();
                 if (dataKhoaHoc != null)
                 {
-
                     foreach (var kh in dataKhoaHoc)
                     {
-                        // Kiểm tra null và count an toàn
                         if (kh.lopHocs == null || kh.lopHocs.Count == 0) continue;
-
-                        // Lấy thông tin tài chính từ KHÓA HỌC
                         decimal hocPhi = (decimal)(kh.hocPhi ?? 0);
                         decimal giamGia = (decimal)(kh.giamGia ?? 0);
-
                         foreach (var lh in kh.lopHocs)
                         {
                             _danhSachLopHoc.Add(new LopHocSimpleDTO
                             {
                                 IdLopHoc = (int)lh.idLopHoc,
                                 TenLop = (string)lh.tenLopHoc,
-                                // Gán học phí của khóa cho lớp
                                 HocPhi = hocPhi,
                                 GiamGia = giamGia
                             });
                         }
                     }
-
-
                 }
-                else
-                {
-                    _danhSachLopHoc = new List<LopHocSimpleDTO>
-                    {
-                        new LopHocSimpleDTO { IdLopHoc = 1, TenLop = "Lớp Vẽ Cơ Bản (K1)",HocPhi=1600000,GiamGia=0 },
-                        new LopHocSimpleDTO { IdLopHoc = 2, TenLop = "Lớp Màu Nước (K2)",HocPhi=1600000,GiamGia=0 },
-                        new LopHocSimpleDTO { IdLopHoc = 3, TenLop = "Lớp Điêu Khắc",HocPhi=1600000,GiamGia=0 },
-                        new LopHocSimpleDTO {IdLopHoc = 4, TenLop = "Lớp Sơn Dầu", HocPhi = 1600000, GiamGia = 0}
-                    };
-                }
-
-                
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi tải danh sách lớp: " + ex.Message);
-            }
+            catch (Exception ex) { MessageBox.Show("Lỗi tải danh sách lớp: " + ex.Message); }
         }
 
-        // 2. CHỨC NĂNG: THÊM DÒNG HỌC VIÊN MỚI
-        private void BtnThemDong_Click(object sender, EventArgs e)
-        {
-            ThemDongHocVien();
-        }
+        private void BtnThemDong_Click(object sender, EventArgs e) { ThemDongHocVien(); }
 
         private void ThemDongHocVien()
         {
-            // Tạo mới 1 UserControl
             var ucItem = new ucItemHocVien();
-
-            // Nạp danh sách lớp vào cho nó
-            if (_danhSachLopHoc != null)
-            {
-                ucItem.LoadDanhSachLop(_danhSachLopHoc);
-            }
-
-            // 1. Set chiều rộng ban đầu cho khớp
+            if (_danhSachLopHoc != null) ucItem.LoadDanhSachLop(_danhSachLopHoc);
             ucItem.Width = flowPanelHocViens.ClientSize.Width - 25;
-
-            // 2. Quan trọng: Anchor Left và Right để khi Panel cha co giãn, nó cố gắng bám theo
-            // (Tuy nhiên trong FlowLayout, Anchor đôi khi không nhạy bằng code Resize ở bước 2, nên ta dùng cả hai cho chắc)
-            //ucItem.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-
-            // Xử lý sự kiện khi nút Xóa trên UserControl được bấm
-            ucItem.OnDeleteRequest += (source, args) =>
+            ucItem.OnDeleteRequest += (s, a) =>
             {
-                // Chỉ cho xóa nếu còn nhiều hơn 1 dòng (tùy chọn)
-                if (flowPanelHocViens.Controls.Count > 1)
-                {
-                    flowPanelHocViens.Controls.Remove(ucItem);
-                    ucItem.Dispose(); // Giải phóng bộ nhớ
-                }
-                else
-                {
-                    MessageBox.Show("Cần ít nhất 1 học viên trong danh sách!");
-                }
+                if (flowPanelHocViens.Controls.Count > 1) { flowPanelHocViens.Controls.Remove(ucItem); ucItem.Dispose(); }
+                else MessageBox.Show("Cần ít nhất 1 học viên!");
             };
-
-            // Thêm vào Panel
             flowPanelHocViens.Controls.Add(ucItem);
-
-            // Cuộn xuống cuối cùng để thấy dòng mới
             flowPanelHocViens.ScrollControlIntoView(ucItem);
         }
 
-        // 3. CHỨC NĂNG: LƯU (GỬI API)
         private async void BtnLuu_Click(object sender, EventArgs e)
         {
-            // A. Validate Phụ Huynh
-            if (string.IsNullOrWhiteSpace(txtTenPH.Text) || string.IsNullOrWhiteSpace(txtSdtPH.Text))
+            string tenPH = txtTenPH.Text.Trim();
+            string sdtPH = txtSdtPH.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(tenPH) || string.IsNullOrWhiteSpace(sdtPH))
             {
-                MessageBox.Show("Vui lòng nhập tên và SĐT Phụ huynh!");
+                MessageBox.Show("Vui lòng nhập tên và SĐT Phụ huynh!", "Thiếu thông tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-          
-
-            // A.1. VALIDATE SỐ ĐIỆN THOẠI
-            if (!Helper.IsValidPhoneNumber(txtSdtPH.Text))
+            if (sdtPH.Length != 10)
             {
-                MessageBox.Show("Số điện thoại không hợp lệ! (Phải bắt đầu bằng 0 và có 10 chữ số)", "Lỗi định dạng", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Số điện thoại phải đủ 10 số!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtSdtPH.Focus();
-                txtSdtPH.SelectAll(); // Bôi đen để người dùng sửa nhanh
                 return;
             }
-
-            // A.2. VALIDATE EMAIL
-            // (Nếu email không bắt buộc thì thêm điều kiện: !string.IsNullOrEmpty(...) && !IsValidEmail(...))
-            if (!Helper.IsValidEmail(txtEmailPH.Text))
+            if (!string.IsNullOrEmpty(txtEmailPH.Text) && !Helper.IsValidEmail(txtEmailPH.Text))
             {
-                MessageBox.Show("Email không đúng định dạng! (Ví dụ: example@gmail.com)", "Lỗi định dạng", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Email sai định dạng!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtEmailPH.Focus();
-                txtEmailPH.SelectAll();
+                return;
+            }
+            if (dtpNgaySinhPH.Value.AddYears(18) > DateTime.Now)
+            {
+                MessageBox.Show("Phụ huynh phải trên 18 tuổi!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // B. Gom dữ liệu
             var requestData = new AddHocVienRequest
             {
-                tenPH = txtTenPH.Text.Trim(),
-                sdt = txtSdtPH.Text.Trim(),
+                tenPH = tenPH,
+                sdt = sdtPH,
                 email = txtEmailPH.Text.Trim(),
                 NgaySinhPH_Raw = dtpNgaySinhPH.Value,
-                gioiTinh= cboGioiTinhPH.SelectedItem?.ToString(),
-
-                // DSHocVien sẽ được add ở dưới
+                gioiTinh = cboGioiTinhPH.SelectedItem?.ToString(),
             };
-            decimal grandTotal = 0;
-            // C. Duyệt qua danh sách UserControl để lấy dữ liệu từng bé
+
             foreach (Control c in flowPanelHocViens.Controls)
             {
                 if (c is ucItemHocVien item)
                 {
                     HocVienDTO hv = item.GetData();
+                    if (string.IsNullOrWhiteSpace(hv.tenHv)) { MessageBox.Show("Thiếu tên học viên!"); return; }
 
-                    // Validate học viên
-                    if (string.IsNullOrWhiteSpace(hv.tenHv))
+                    // Dù đã chặn nhập, vẫn kiểm tra lại lần cuối cho chắc chắn
+                    if (hv.tenHv.Any(char.IsDigit))
                     {
-                        MessageBox.Show("Tên học viên không được để trống!");
-                        return; // Dừng lại ngay
+                        MessageBox.Show($"Tên học viên '{hv.tenHv}' không hợp lệ (chứa số)!", "Lỗi");
+                        return;
                     }
-                    // Tính tổng tiền
-                    foreach (var idLop in hv.dsLopId)
-                    {
-                        var lop = _danhSachLopHoc.FirstOrDefault(x => x.IdLopHoc == idLop);
-                        if (lop != null) grandTotal += lop.ThanhTien;
-                    }
+
+                    if (hv.NgaySinh_Raw.Value.Date >= DateTime.Now.Date) { MessageBox.Show("Ngày sinh học viên không hợp lệ!", "Lỗi"); return; }
                     requestData.dsHocVien.Add(hv);
                 }
             }
 
             _dataToPrint = requestData;
-            _totalAmountToPrint = grandTotal;
-
-            // D. Gửi lên Server
             await CallApiAddHocVien(requestData);
         }
 
         private async Task CallApiAddHocVien(AddHocVienRequest data)
         {
-            btnLuu.Enabled = false;
-            btnLuu.Text = "Đang lưu...";
-
+            btnLuu.Enabled = false; btnLuu.Text = "Đang lưu...";
             try
             {
                 dynamic result = await UCQuanLyHocVien.AddHocVien(data);
-                if (result != null) {
-                
-                    Console.WriteLine("Thêm học viên thành công");
-                    InHoaDon();
-
+                if (result != null)
+                {
+                    if (MessageBox.Show("Thêm thành công! In hóa đơn?", "Thông báo", MessageBoxButtons.YesNo) == DialogResult.Yes) InHoaDon();
+                    this.DialogResult = DialogResult.OK; this.Close();
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi: " + ex.Message);
-            }
-            finally
-            {
-                btnLuu.Enabled = true;
-                btnLuu.Text = "LƯU DỮ LIỆU";
-                this.Close();
-            }
+            catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
+            finally { btnLuu.Enabled = true; btnLuu.Text = "LƯU DỮ LIỆU"; }
         }
 
         private void flowPanelHocViens_SizeChanged(object sender, EventArgs e)
         {
             flowPanelHocViens.SuspendLayout();
-
-            foreach (Control c in flowPanelHocViens.Controls)
-            {
-                // ClientSize.Width: Là chiều rộng bên trong (trừ đi viền)
-                // Trừ đi 25: Để chừa chỗ cho thanh cuộn dọc (Scrollbar) không bị che mất nội dung
-                c.Width = flowPanelHocViens.ClientSize.Width - 25;
-            }
-
-            // Cho phép vẽ lại giao diện
+            foreach (Control c in flowPanelHocViens.Controls) c.Width = flowPanelHocViens.ClientSize.Width - 25;
             flowPanelHocViens.ResumeLayout();
         }
 
-        private void TxtSdtPH_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Chỉ cho phép nhập số (IsDigit) và phím điều khiển (như Backspace)
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
-            {
-                e.Handled = true; // Chặn không cho nhập
-            }
-        }
-
-        //heler in report
         private void InHoaDon()
         {
-            // 1. Khởi tạo đối tượng in
             PrintDocument pd = new PrintDocument();
             pd.PrintPage += new PrintPageEventHandler(Pd_PrintPage);
-
-            // 2. Mở hộp thoại xem trước (Print Preview)
             PrintPreviewDialog pvd = new PrintPreviewDialog();
             pvd.Document = pd;
-
-            // Phóng to form xem trước cho dễ nhìn
-            pvd.Width = 800;
-            pvd.Height = 600;
+            pvd.Width = 800; pvd.Height = 600;
             pvd.ShowDialog();
-
-            // Nếu muốn in thẳng ra máy in mặc định không cần xem trước thì dùng:
-            // pd.Print(); 
         }
 
-        // Hàm này đóng vai trò "Vẽ" nội dung lên tờ giấy
         private void Pd_PrintPage(object sender, PrintPageEventArgs e)
         {
-            // A. CẤU HÌNH FONT VÀ LỀ
+            // Font và cấu hình in
             Font fontHeader = new Font("Arial", 16, FontStyle.Bold);
             Font fontSubHeader = new Font("Arial", 12, FontStyle.Bold);
             Font fontRegular = new Font("Arial", 10, FontStyle.Regular);
             Font fontBold = new Font("Arial", 10, FontStyle.Bold);
+            float margin = 50, y = margin, w = e.PageBounds.Width;
 
-            float margin = 50;
-            float y = margin; // Tọa độ Y bắt đầu vẽ (từ trên xuống)
-            float pageWidth = e.PageBounds.Width;
-            float contentWidth = pageWidth - 2 * margin;
-
-            // B. VẼ HEADER (Tên trung tâm)
-            string centerName = "TRUNG TÂM MỸ THUẬT SÁNG TẠO";
-            string title = "HÓA ĐƠN THANH TOÁN";
-            string date = $"Ngày: {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
-
-            // Vẽ căn giữa
-            SizeF sizeCenter = e.Graphics.MeasureString(centerName, fontHeader);
-            e.Graphics.DrawString(centerName, fontHeader, Brushes.Blue, (pageWidth - sizeCenter.Width) / 2, y);
+            e.Graphics.DrawString("TRUNG TÂM MỸ THUẬT", fontHeader, Brushes.Blue, (w - e.Graphics.MeasureString("TRUNG TÂM MỸ THUẬT", fontHeader).Width) / 2, y);
             y += 30;
+            e.Graphics.DrawString("HÓA ĐƠN THANH TOÁN", fontSubHeader, Brushes.Black, (w - e.Graphics.MeasureString("HÓA ĐƠN THANH TOÁN", fontSubHeader).Width) / 2, y);
+            y += 40;
 
-            SizeF sizeTitle = e.Graphics.MeasureString(title, fontSubHeader);
-            e.Graphics.DrawString(title, fontSubHeader, Brushes.Black, (pageWidth - sizeTitle.Width) / 2, y);
-            y += 25;
-
-            e.Graphics.DrawString(date, fontRegular, Brushes.Black, margin, y);
-            y += 30;
-
-            // Kẻ đường gạch ngang
-            e.Graphics.DrawLine(Pens.Black, margin, y, pageWidth - margin, y);
-            y += 10;
-
-            // C. THÔNG TIN PHỤ HUYNH
             e.Graphics.DrawString($"Phụ huynh: {_dataToPrint.tenPH}", fontBold, Brushes.Black, margin, y);
-            y += 20;
+            y += 25;
             e.Graphics.DrawString($"SĐT: {_dataToPrint.sdt}", fontRegular, Brushes.Black, margin, y);
-            y += 20;
-            e.Graphics.DrawString($"Email: {_dataToPrint.email}", fontRegular, Brushes.Black, margin, y);
-            y += 30;
+            y += 35;
 
-            // D. BẢNG CHI TIẾT
-            // Header bảng
-            float col1 = margin;             // Cột Tên HV
-            float col2 = margin + 200;       // Cột Lớp
-            float col3 = pageWidth - margin - 100; // Cột Thành Tiền (Căn phải)
-
+            // Bảng chi tiết
+            float col1 = margin, col2 = margin + 200, col3 = w - margin - 100;
             e.Graphics.DrawString("Học viên", fontBold, Brushes.Black, col1, y);
             e.Graphics.DrawString("Lớp học", fontBold, Brushes.Black, col2, y);
             e.Graphics.DrawString("Thành tiền", fontBold, Brushes.Black, col3, y);
-            y += 20;
-            e.Graphics.DrawLine(Pens.Black, margin, y, pageWidth - margin, y); // Gạch chân header
+            y += 25;
+            e.Graphics.DrawLine(Pens.Black, margin, y, w - margin, y);
             y += 10;
 
-            // Duyệt danh sách để in từng dòng
-            decimal totalCheck = 0;
-
+            decimal total = 0;
             foreach (var hv in _dataToPrint.dsHocVien)
             {
                 e.Graphics.DrawString($"- {hv.tenHv}", fontBold, Brushes.Black, col1, y);
-                float startY = y; // Lưu vị trí Y của tên học viên
-
                 foreach (var lopId in hv.dsLopId)
                 {
-                    // Tìm thông tin lớp trong danh sách _danhSachLopHoc đã load từ đầu form
-                    // Lưu ý: _danhSachLopHoc là biến toàn cục chứa List<LopHocSimpleDTO>
-                    var lopInfo = _danhSachLopHoc.FirstOrDefault(l => l.IdLopHoc == lopId);
-
-                    if (lopInfo != null)
+                    var lop = _danhSachLopHoc.FirstOrDefault(l => l.IdLopHoc == lopId);
+                    if (lop != null)
                     {
-                        string tenLop = lopInfo.TenLop;
-                        // Nếu tên lớp quá dài, có thể cần xử lý cắt chuỗi (đơn giản ở đây mình in thẳng)
-                        if (tenLop.Length > 30) tenLop = tenLop.Substring(0, 27) + "...";
-
-                        decimal thanhTien = lopInfo.ThanhTien;
-                        totalCheck += thanhTien;
-
-                        e.Graphics.DrawString(tenLop, fontRegular, Brushes.Black, col2, y);
-                        e.Graphics.DrawString(thanhTien.ToString("#,##0"), fontRegular, Brushes.Black, col3, y);
+                        e.Graphics.DrawString(lop.TenLop, fontRegular, Brushes.Black, col2, y);
+                        e.Graphics.DrawString(lop.ThanhTien.ToString("#,##0"), fontRegular, Brushes.Black, col3, y);
+                        total += lop.ThanhTien;
                         y += 20;
                     }
                 }
-                // Nếu học viên đăng ký nhiều lớp, cộng thêm khoảng cách để tách biệt các học viên
-                y += 5;
+                y += 10;
             }
 
             y += 10;
-            e.Graphics.DrawLine(Pens.Black, margin, y, pageWidth - margin, y); // Kẻ kết thúc bảng
+            e.Graphics.DrawLine(Pens.Black, margin, y, w - margin, y);
             y += 10;
-
-            // E. TỔNG TIỀN
-            string tongTienStr = $"TỔNG CỘNG: {_totalAmountToPrint.ToString("#,##0")} VNĐ";
-            SizeF sizeTong = e.Graphics.MeasureString(tongTienStr, fontHeader);
-
-            // In căn phải
-            e.Graphics.DrawString(tongTienStr, fontHeader, Brushes.Red, pageWidth - margin - sizeTong.Width, y);
-            y += 40;
-
-            // F. FOOTER
-            string footer = "Cảm ơn quý khách và hẹn gặp lại!";
-            SizeF sizeFooter = e.Graphics.MeasureString(footer, fontRegular);
-            e.Graphics.DrawString(footer, fontRegular, Brushes.Gray, (pageWidth - sizeFooter.Width) / 2, y);
+            e.Graphics.DrawString($"TỔNG CỘNG: {total.ToString("#,##0")} VNĐ", fontHeader, Brushes.Red, w - margin - e.Graphics.MeasureString($"TỔNG CỘNG: {total.ToString("#,##0")} VNĐ", fontHeader).Width, y);
         }
     }
 }

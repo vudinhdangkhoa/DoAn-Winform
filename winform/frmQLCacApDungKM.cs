@@ -40,16 +40,38 @@ namespace winform
             public int SoLuong { get; set; }
         }
 
-        // Biến lưu ID dòng đang chọn để update
-        private int _currentSelectedId = -1;
-        private string _currentType = ""; // "KhoaHoc" hoặc "HoaCu"
 
+        private int _currentSelectedId = -1;
+        private string _currentType = "";
+        private void SetupDateTimePickerConstraints()
+        {
+            // Đặt ngày tối thiểu là hôm nay (không được chọn ngày trong quá khứ)
+            dtpEndDate.MinDate = DateTime.Now.Date;
+
+            // Đặt giá trị mặc định
+            dtpEndDate.Value = DateTime.Now.Date;
+
+            // Gắn sự kiện kiểm tra khi thay đổi giá trị
+            dtpEndDate.ValueChanged += DtpEndDate_ValueChanged;
+        }
+
+        private void DtpEndDate_ValueChanged(object sender, EventArgs e)
+        {
+            // Kiểm tra ngày kết thúc không được nhỏ hơn ngày hiện tại
+            if (dtpEndDate.Value.Date < DateTime.Now.Date)
+            {
+                MessageBox.Show("Ngày kết thúc không được nhỏ hơn ngày hiện tại!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpEndDate.Value = DateTime.Now.Date;
+            }
+        }
         public frmQLCacApDungKM()
         {
             InitializeComponent();
             SetupEvents();
             InitializeGrids();
             LoadData();
+            SetupDateTimePickerConstraints();
         }
 
         private void InitializeGrids()
@@ -152,32 +174,47 @@ namespace winform
                 return;
             }
 
+            // Kiểm tra ngày kết thúc
+            if (dtpEndDate.Value.Date < DateTime.Now.Date)
+            {
+                MessageBox.Show("Ngày kết thúc không được nhỏ hơn ngày hiện tại!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Kiểm tra số lượng
+            if (numSoLuong.Value <= 0)
+            {
+                MessageBox.Show("Số lượng phải lớn hơn 0!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             // Tạo object gửi đi update
             var updateData = new
             {
                 id = _currentSelectedId,
-                type = _currentType, // Server cần biết sửa bảng nào (KhoaHoc hay HoaCu)
+                type = _currentType,
                 ngayKetThuc = dtpEndDate.Value,
                 soLuong = (int)numSoLuong.Value
             };
 
             try
             {
-                // BẠN CẦN VIẾT THÊM API 'UpdateApDung' TRÊN SERVER ĐỂ HỨNG CÁI NÀY
                 using (HttpClient client = new HttpClient())
                 {
                     string json = JsonConvert.SerializeObject(updateData);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                    // Giả định URL API
                     var response = await client.PutAsync(DungChung.getUrl("QLKhuyenMai/UpdateApDung"), content);
 
                     if (response.IsSuccessStatusCode)
                     {
                         MessageBox.Show("Cập nhật thành công!");
-                        LoadData(); // Refresh lại lưới
+                        LoadData();
                         _currentSelectedId = -1;
                         txtTenItem.Clear();
+                        txtTenKM.Clear();
                     }
                     else
                     {
@@ -193,17 +230,17 @@ namespace winform
 
         private void BtnDelete_Click(object sender, EventArgs e)
         {
-            // 1. Reset biến logic quan trọng (để ngăn nút Update hoạt động nhầm)
+            // 1. Reset biến logic quan trọng
             _currentSelectedId = -1;
             _currentType = "";
 
             // 2. Xóa thông tin hiển thị
             txtTenItem.Clear();
-            txtTenKM.Clear(); // BỔ SUNG: Cần xóa cả tên khuyến mãi nữa cho sạch
+            txtTenKM.Clear();
 
             // 3. Reset các control nhập liệu về mặc định
             numSoLuong.Value = 0;
-            dtpEndDate.Value = DateTime.Now;
+            dtpEndDate.Value = DateTime.Now.Date;
         }
     }
 }

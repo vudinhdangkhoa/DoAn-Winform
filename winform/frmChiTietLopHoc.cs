@@ -14,36 +14,27 @@ namespace winform
 {
     public partial class frmChiTietLopHoc : Form
     {
+        // ... (Giữ nguyên các DTO Class như cũ) ...
         public class LopHocDetailDTO
         {
             public int IdLopHoc { get; set; }
             public int IdKhoaHoc { get; set; }
             public string TenLopHoc { get; set; }
             public DateTime NgayKhaiGiang { get; set; }
-            public int IdPhong { get; set; } // Đã sửa API trả về IdPhong (chữ thường idPhong cũng map đc)
+            public int IdPhong { get; set; }
             public string SoBuoiTrenTuan { get; set; }
             public int SoLuongToiThieu { get; set; }
             public int SoLuongToiDa { get; set; }
             public TimeSpan ThoiGianBatDau { get; set; }
             public TimeSpan ThoiGianKetThuc { get; set; }
-
-            // List object GiaoVien (API trả về { TenGv, GiaoVienId })
             public List<GiaoVienDTO> GiaoVien { get; set; }
-
-            // List object HocCu (API trả về list object { IdHocCu, TenHocCu, SoLuong... })
             public List<HocCuLocal> HocCu { get; set; }
         }
-
-        // 2. Các DTO phụ
-        public class GiaoVienDTO { public int GiaoVienId { get; set; } public string TenGv { get; set; } }
+        public class GiaoVienDTO { public int GiaoVienId { get; set; } public string TenGv { get; set; } public string DisplayText => $"{GiaoVienId} - {TenGv}"; }
         public class PhongHocDTO { public int IdPhong { get; set; } public string TenPhong { get; set; } }
         public class KhoaHocDTO { public int IdKhoaHoc { get; set; } public string TenKhoaHoc { get; set; } }
         public class HocCuSimpleDTO { public int IdHocCu { get; set; } public string TenHocCu { get; set; } }
-
-        // 3. DTO hiển thị GridView Học Cụ
         public class HocCuLocal { public int IdHocCu { get; set; } public string TenHocCu { get; set; } public int SoLuong { get; set; } }
-
-        // 4. Payload Gửi đi (POST/PUT)
         public class AddLopHocPayload
         {
             public string TenLopHoc { get; set; }
@@ -58,26 +49,22 @@ namespace winform
             public List<int> GiaoVienId { get; set; }
             public Dictionary<string, int> DShocCu { get; set; }
         }
-
-        // DTO Response của API GetGiaoVienKhongTrunglich
         public class GiaoVienAvailableResponse
         {
             public List<string> tenGV { get; set; }
             public List<int> idGV { get; set; }
         }
 
-        // ================== LOGIC FORM ==================
-
         private int _idLopHoc;
         private BindingList<HocCuLocal> _listHocCuLocal;
-        private bool _isStarted = false; // Cờ đánh dấu lớp đã học
+        private bool _isStarted = false;
 
         public frmChiTietLopHoc(int idLopHoc = -1)
         {
             InitializeComponent();
+            numSoBuoiTuan.ResetText();
             _idLopHoc = idLopHoc;
 
-            // Setup GridView Học Cụ
             _listHocCuLocal = new BindingList<HocCuLocal>();
             dgvHocCu.AutoGenerateColumns = false;
             dgvHocCu.AllowUserToAddRows = false;
@@ -87,37 +74,52 @@ namespace winform
             {
                 dgvHocCu.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "TenHocCu", HeaderText = "Tên HC", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
                 dgvHocCu.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "SoLuong", HeaderText = "SL", Width = 60 });
-
-                // --- THÊM CỘT XÓA ---
-                DataGridViewButtonColumn btnXoa = new DataGridViewButtonColumn();
-                btnXoa.Name = "btnXoaHocCu";
-                btnXoa.HeaderText = "Thao tác";
-                btnXoa.Text = "Xóa";
-                btnXoa.UseColumnTextForButtonValue = true;
-                btnXoa.Width = 70;
-                // Style cho nút Xóa (Màu đỏ nhạt cho dễ nhìn)
+                DataGridViewButtonColumn btnXoa = new DataGridViewButtonColumn { Name = "btnXoaHocCu", HeaderText = "Thao tác", Text = "Xóa", UseColumnTextForButtonValue = true, Width = 70 };
                 btnXoa.DefaultCellStyle.ForeColor = Color.Red;
-                btnXoa.DefaultCellStyle.SelectionForeColor = Color.Red;
-
                 dgvHocCu.Columns.Add(btnXoa);
             }
 
-            // Gán sự kiện
             this.Load += FrmChiTietLopHoc_Load;
             btnAddHocCu.Click += BtnAddHocCu_Click;
             btnLuu.Click += BtnLuu_Click;
             dgvHocCu.CellClick += DgvHocCu_CellClick;
             btnHuy.Click += (s, e) => this.Close();
-
-            // Sự kiện nút Lọc GV (Bạn đã thêm nút này ở bước Designer trước đó chưa? Nếu chưa thì code sẽ lỗi dòng này)
-            // Giả sử bạn ĐÃ thêm nút btnLocGV vào Designer như tôi hướng dẫn
             if (btnLocGV != null) btnLocGV.Click += BtnLocGV_Click;
+
+            // Ràng buộc nhập số cho 3 TextBox
+            txtSiSoMin.KeyPress += OnlyNumbers_KeyPress;
+            txtSiSoMax.KeyPress += OnlyNumbers_KeyPress;
+            txtSLHocCu.KeyPress += OnlyNumbers_KeyPress;
+
+            numSoBuoiTuan.ValueChanged += (s, e) =>
+            {
+                for (int i = 0; i < chkListNgayHoc.Items.Count; i++) chkListNgayHoc.SetItemChecked(i, false);
+            };
+            chkListNgayHoc.ItemCheck += ChkListNgayHoc_ItemCheck;
+        }
+
+        private void OnlyNumbers_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar)) e.Handled = true;
+        }
+
+        private void ChkListNgayHoc_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (e.NewValue == CheckState.Checked)
+            {
+                int maxAllowed = (int)numSoBuoiTuan.Value;
+                int currentCheckedCount = chkListNgayHoc.CheckedItems.Count;
+                if (currentCheckedCount >= maxAllowed)
+                {
+                    e.NewValue = CheckState.Unchecked;
+                    MessageBox.Show($"Bạn chỉ được chọn tối đa {maxAllowed} buổi/tuần!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
         }
 
         private async void FrmChiTietLopHoc_Load(object sender, EventArgs e)
         {
-            await LoadDataSources(); // Load ComboBox trước
-
+            await LoadDataSources();
             if (_idLopHoc > 0)
             {
                 lblTitle.Text = "CẬP NHẬT LỚP HỌC";
@@ -126,16 +128,18 @@ namespace winform
             else
             {
                 lblTitle.Text = "THÊM LỚP HỌC MỚI";
-                // Mặc định
                 dtpNgayKG.Value = DateTime.Today.AddDays(1);
                 dtpGioBatDau.Value = DateTime.Today.AddHours(8);
                 dtpGioKetThuc.Value = DateTime.Today.AddHours(10);
 
-                // Mặc định load toàn bộ GV khi thêm mới (hoặc để trống chờ lọc)
-                // await LoadAllTeachers(); 
+                // Mặc định Min=5, Max=12
+                txtSiSoMin.Text = "5";
+                txtSiSoMax.Text = "12";
+                txtSLHocCu.Text = "1";
             }
         }
 
+        // ... (LoadDataSources giữ nguyên) ...
         private async Task LoadDataSources()
         {
             try
@@ -145,29 +149,22 @@ namespace winform
                     var t1 = client.GetAsync(DungChung.getUrl("KhoaHoc/GetAllKhoaHoc"));
                     var t2 = client.GetAsync(DungChung.getUrl("QLLopHoc/GetAllPhongHoc"));
                     var t3 = client.GetAsync(DungChung.getUrl("QLLopHoc/GetAllHocCu"));
-                    // Không load GV ở đây vì cần lọc theo giờ, hoặc load all để backup
-
                     await Task.WhenAll(t1, t2, t3);
 
                     if (t1.Result.IsSuccessStatusCode)
                     {
                         var listKH = JsonConvert.DeserializeObject<List<KhoaHocDTO>>(await t1.Result.Content.ReadAsStringAsync());
-                        cboKhoaHoc.DataSource = listKH;
-                        cboKhoaHoc.DisplayMember = "TenKhoaHoc"; cboKhoaHoc.ValueMember = "IdKhoaHoc";
+                        cboKhoaHoc.DataSource = listKH; cboKhoaHoc.DisplayMember = "TenKhoaHoc"; cboKhoaHoc.ValueMember = "IdKhoaHoc";
                     }
-
                     if (t2.Result.IsSuccessStatusCode)
                     {
                         var listP = JsonConvert.DeserializeObject<List<PhongHocDTO>>(await t2.Result.Content.ReadAsStringAsync());
-                        cboPhong.DataSource = listP;
-                        cboPhong.DisplayMember = "TenPhong"; cboPhong.ValueMember = "IdPhong";
+                        cboPhong.DataSource = listP; cboPhong.DisplayMember = "TenPhong"; cboPhong.ValueMember = "IdPhong";
                     }
-
                     if (t3.Result.IsSuccessStatusCode)
                     {
                         var listHC = JsonConvert.DeserializeObject<List<HocCuSimpleDTO>>(await t3.Result.Content.ReadAsStringAsync());
-                        cboChonHocCu.DataSource = listHC;
-                        cboChonHocCu.DisplayMember = "TenHocCu"; cboChonHocCu.ValueMember = "IdHocCu";
+                        cboChonHocCu.DataSource = listHC; cboChonHocCu.DisplayMember = "TenHocCu"; cboChonHocCu.ValueMember = "IdHocCu";
                     }
                 }
             }
@@ -186,59 +183,43 @@ namespace winform
                         var json = await response.Content.ReadAsStringAsync();
                         var data = JsonConvert.DeserializeObject<LopHocDetailDTO>(json);
 
-                        // 1. Bind Info
                         txtTenLop.Text = data.TenLopHoc;
                         cboKhoaHoc.SelectedValue = data.IdKhoaHoc;
-                        cboPhong.SelectedValue = data.IdPhong; // OK vì API mới đã trả về idPhong
+                        cboPhong.SelectedValue = data.IdPhong;
                         dtpNgayKG.Value = data.NgayKhaiGiang;
 
-                        numSiSoMin.Value = data.SoLuongToiThieu;
-                        numSiSoMax.Value = data.SoLuongToiDa;
+                        // Load Textbox Sĩ Số
+                        txtSiSoMin.Text = data.SoLuongToiThieu.ToString();
+                        txtSiSoMax.Text = data.SoLuongToiDa.ToString();
 
-                        // 2. Bind Lịch
                         dtpGioBatDau.Value = DateTime.Today.Add(data.ThoiGianBatDau);
                         dtpGioKetThuc.Value = DateTime.Today.Add(data.ThoiGianKetThuc);
                         ParseStringToDays(data.SoBuoiTrenTuan);
 
-                        // 3. Bind Học Cụ
                         _listHocCuLocal.Clear();
-                        if (data.HocCu != null)
-                        {
-                            foreach (var hc in data.HocCu) _listHocCuLocal.Add(hc);
-                        }
+                        if (data.HocCu != null) foreach (var hc in data.HocCu) _listHocCuLocal.Add(hc);
 
-                        // 4. Bind Giáo Viên (Lấy danh sách GV hiện tại của lớp đưa vào CheckedListBox)
-                        // Lưu ý: Vì danh sách GV khả dụng phụ thuộc vào giờ học, nên ta sẽ set DataSource là danh sách GV đang dạy lớp này trước
                         if (data.GiaoVien != null && data.GiaoVien.Count > 0)
                         {
                             chkListGiaoVien.DataSource = data.GiaoVien;
-                            chkListGiaoVien.DisplayMember = "TenGv";
+                            chkListGiaoVien.DisplayMember = "DisplayText";
                             chkListGiaoVien.ValueMember = "GiaoVienId";
-
-                            // Tick all (vì đây là những người đang dạy)
-                            for (int i = 0; i < chkListGiaoVien.Items.Count; i++)
-                                chkListGiaoVien.SetItemChecked(i, true);
+                            for (int i = 0; i < chkListGiaoVien.Items.Count; i++) chkListGiaoVien.SetItemChecked(i, true);
                         }
 
-                        // Check khóa sửa
-                        if (data.NgayKhaiGiang <= DateTime.Now)
-                        {
-                            _isStarted = true;
-                            // MessageBox.Show("Lớp đã khai giảng...");
-                        }
+                        if (data.NgayKhaiGiang <= DateTime.Now) _isStarted = true;
                     }
                 }
             }
             catch (Exception ex) { MessageBox.Show("Lỗi load chi tiết: " + ex.Message); }
         }
 
-        // --- Helper xử lý ngày ---
         private string ConvertDaysToString()
         {
             List<int> selected = new List<int>();
             for (int i = 0; i < chkListNgayHoc.Items.Count; i++)
             {
-                if (chkListNgayHoc.GetItemChecked(i)) selected.Add(i + 1); // 1=Thứ 2
+                if (chkListNgayHoc.GetItemChecked(i)) selected.Add(i + 1);
             }
             return string.Join(",", selected);
         }
@@ -247,6 +228,7 @@ namespace winform
         {
             if (string.IsNullOrEmpty(s)) return;
             var arr = s.Split(',');
+            if (arr.Length > 0) numSoBuoiTuan.Value = arr.Length;
             foreach (var d in arr)
             {
                 if (int.TryParse(d, out int idx) && idx >= 1 && idx <= 7)
@@ -254,14 +236,16 @@ namespace winform
             }
         }
 
-        // --- SỰ KIỆN ---
-
-        // API: Lọc Giáo viên trống lịch (POST)
         private async void BtnLocGV_Click(object sender, EventArgs e)
         {
-            if (dtpGioBatDau.Value >= dtpGioKetThuc.Value) { MessageBox.Show("Giờ lỗi!"); return; }
+            if (dtpGioBatDau.Value >= dtpGioKetThuc.Value) { MessageBox.Show("Giờ bắt đầu phải nhỏ hơn giờ kết thúc!"); return; }
             string ngayHocStr = ConvertDaysToString();
             if (string.IsNullOrEmpty(ngayHocStr)) { MessageBox.Show("Chọn ngày học trước!"); return; }
+            if (chkListNgayHoc.CheckedItems.Count != (int)numSoBuoiTuan.Value)
+            {
+                MessageBox.Show($"Vui lòng chọn đủ {(int)numSoBuoiTuan.Value} ngày học trước khi lọc GV!");
+                return;
+            }
 
             var payload = new
             {
@@ -276,27 +260,20 @@ namespace winform
                 {
                     string json = JsonConvert.SerializeObject(payload);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                    // Gọi API POST
                     var response = await client.PostAsync(DungChung.getUrl("QLLopHoc/GetGiaoVienKhongTrunglich"), content);
 
                     if (response.IsSuccessStatusCode)
                     {
                         var resJson = await response.Content.ReadAsStringAsync();
                         var data = JsonConvert.DeserializeObject<GiaoVienAvailableResponse>(resJson);
-
-                        // Map sang list DTO để hiển thị
                         List<GiaoVienDTO> listAvailable = new List<GiaoVienDTO>();
                         if (data.idGV != null && data.tenGV != null)
                         {
                             for (int i = 0; i < data.idGV.Count; i++)
-                            {
                                 listAvailable.Add(new GiaoVienDTO { GiaoVienId = data.idGV[i], TenGv = data.tenGV[i] });
-                            }
                         }
-
                         chkListGiaoVien.DataSource = listAvailable;
-                        chkListGiaoVien.DisplayMember = "TenGv";
+                        chkListGiaoVien.DisplayMember = "DisplayText";
                         chkListGiaoVien.ValueMember = "GiaoVienId";
                         MessageBox.Show($"Tìm thấy {listAvailable.Count} giáo viên rảnh.");
                     }
@@ -309,24 +286,53 @@ namespace winform
         {
             if (cboChonHocCu.SelectedItem is HocCuSimpleDTO item)
             {
+                // Parse SL từ TextBox
+                if (!int.TryParse(txtSLHocCu.Text, out int sl) || sl <= 0)
+                {
+                    MessageBox.Show("Số lượng phải là số > 0");
+                    return;
+                }
+
                 var exist = _listHocCuLocal.FirstOrDefault(x => x.IdHocCu == item.IdHocCu);
-                if (exist != null) exist.SoLuong += (int)numSLHocCu.Value;
-                else _listHocCuLocal.Add(new HocCuLocal { IdHocCu = item.IdHocCu, TenHocCu = item.TenHocCu, SoLuong = (int)numSLHocCu.Value });
+                if (exist != null) exist.SoLuong += sl;
+                else _listHocCuLocal.Add(new HocCuLocal { IdHocCu = item.IdHocCu, TenHocCu = item.TenHocCu, SoLuong = sl });
                 dgvHocCu.Refresh();
             }
         }
 
         private async void BtnLuu_Click(object sender, EventArgs e)
         {
-            // Validate
             if (string.IsNullOrWhiteSpace(txtTenLop.Text)) { MessageBox.Show("Nhập tên lớp!"); return; }
             if (cboKhoaHoc.SelectedIndex == -1 || cboPhong.SelectedIndex == -1) { MessageBox.Show("Chọn khóa/phòng!"); return; }
-            if (chkListNgayHoc.CheckedItems.Count == 0) { MessageBox.Show("Chọn lịch học!"); return; }
+            if (dtpNgayKG.Value.Date < DateTime.Now.Date) { MessageBox.Show("Ngày khai giảng không được nhỏ hơn ngày hiện tại!"); return; }
+            if (dtpGioBatDau.Value.TimeOfDay >= dtpGioKetThuc.Value.TimeOfDay) { MessageBox.Show("Giờ học không hợp lệ!"); return; }
 
-            // Payload
+            if (chkListNgayHoc.CheckedItems.Count != (int)numSoBuoiTuan.Value)
+            {
+                MessageBox.Show("Số ngày chọn chưa khớp với số buổi/tuần!");
+                return;
+            }
+
+            // --- VALIDATE SĨ SỐ ---
+            if (!int.TryParse(txtSiSoMin.Text, out int siSoMin) || siSoMin < 5)
+            {
+                MessageBox.Show("Sĩ số tối thiểu phải >= 5 (Yêu cầu hệ thống).", "Lỗi Sĩ Số");
+                return;
+            }
+            if (!int.TryParse(txtSiSoMax.Text, out int siSoMax) || siSoMax > 12)
+            {
+                MessageBox.Show("Sĩ số tối đa phải <= 12 (Yêu cầu hệ thống).", "Lỗi Sĩ Số");
+                return;
+            }
+            if (siSoMin > siSoMax)
+            {
+                MessageBox.Show("Sĩ số tối thiểu không được lớn hơn tối đa!", "Lỗi Sĩ Số");
+                return;
+            }
+            // ---------------------
+
             var listGVIds = new List<int>();
             foreach (GiaoVienDTO gv in chkListGiaoVien.CheckedItems) listGVIds.Add(gv.GiaoVienId);
-
             var dictHocCu = new Dictionary<string, int>();
             foreach (var hc in _listHocCuLocal) dictHocCu.Add(hc.IdHocCu.ToString(), hc.SoLuong);
 
@@ -339,8 +345,8 @@ namespace winform
                 SoBuoiTrenTuan = ConvertDaysToString(),
                 ThoiGianBatDau = dtpGioBatDau.Value.TimeOfDay,
                 ThoiGianKetThuc = dtpGioKetThuc.Value.TimeOfDay,
-                SoLuongToiThieu = (int)numSiSoMin.Value,
-                SoLuongToiDa = (int)numSiSoMax.Value,
+                SoLuongToiThieu = siSoMin,
+                SoLuongToiDa = siSoMax,
                 GiaoVienId = listGVIds,
                 DShocCu = dictHocCu
             };
@@ -366,7 +372,6 @@ namespace winform
                     else
                     {
                         var err = await res.Content.ReadAsStringAsync();
-                        // Hiển thị lỗi đẹp (bỏ bớt ký tự JSON nếu cần)
                         MessageBox.Show("Lỗi: " + err);
                     }
                 }
@@ -374,24 +379,12 @@ namespace winform
             catch (Exception ex) { MessageBox.Show("Lỗi hệ thống: " + ex.Message); }
         }
 
-        private void lblTitle_Click(object sender, EventArgs e)
-        {
-
-        }
+        private void lblTitle_Click(object sender, EventArgs e) { }
         private void DgvHocCu_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            // Kiểm tra click đúng vào nút Xóa và không phải header
             if (e.RowIndex >= 0 && dgvHocCu.Columns[e.ColumnIndex].Name == "btnXoaHocCu")
             {
-                // Lấy item đang chọn
-                var item = _listHocCuLocal[e.RowIndex];
-
-                // Xác nhận xóa (Optional)
-                 if (MessageBox.Show($"Xóa {item.TenHocCu}?", "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                {
-                    _listHocCuLocal.RemoveAt(e.RowIndex);
-                    // Không cần gọi Refresh vì BindingList tự cập nhật UI
-                }
+                _listHocCuLocal.RemoveAt(e.RowIndex);
             }
         }
     }

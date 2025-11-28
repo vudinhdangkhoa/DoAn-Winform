@@ -34,11 +34,12 @@ namespace winform
         public frmAddHoaCu()
         {
             InitializeComponent();
-            LoadLoaiHocCu(); // Load dữ liệu ngay khi khởi tạo
-
-            // Gán sự kiện
+            LoadLoaiHocCu();
             btnLuu.Click += BtnLuu_Click;
             btnHuy.Click += (s, e) => this.Close();
+
+            numGiaBan.ResetText();
+            numSoLuong.ResetText();
         }
 
         private async void LoadLoaiHocCu()
@@ -47,18 +48,13 @@ namespace winform
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    // Gọi API lấy tất cả (vì API GetAllHocCu của bạn trả về cả danh sách loại)
                     var response = await client.GetAsync(DungChung.getUrl("QLHocCu/GetAllHocCu"));
-
                     if (response.IsSuccessStatusCode)
                     {
                         var json = await response.Content.ReadAsStringAsync();
                         var data = JsonConvert.DeserializeObject<dynamic>(json);
-
-                        // Lấy phần 'loaiHocCus' từ JSON trả về
                         var listLoai = JsonConvert.DeserializeObject<List<LoaiHocCuDTO>>(data.loaiHocCus.ToString());
 
-                        // Đổ vào ComboBox
                         cboLoaiHocCu.DataSource = listLoai;
                         cboLoaiHocCu.DisplayMember = "TenLoai";
                         cboLoaiHocCu.ValueMember = "IdLoaiHocCu";
@@ -77,7 +73,7 @@ namespace winform
 
         private async void BtnLuu_Click(object sender, EventArgs e)
         {
-            // 1. Validate dữ liệu
+            // 1. Validate
             if (string.IsNullOrWhiteSpace(txtTenHocCu.Text))
             {
                 MessageBox.Show("Vui lòng nhập tên họa cụ!", "Cảnh báo");
@@ -91,9 +87,10 @@ namespace winform
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(txtDonViTinh.Text))
+            // Kiểm tra ComboBox ĐVT
+            if (cboDonViTinh.SelectedIndex == -1)
             {
-                MessageBox.Show("Vui lòng nhập đơn vị tính!", "Cảnh báo");
+                MessageBox.Show("Vui lòng chọn đơn vị tính!", "Cảnh báo");
                 return;
             }
 
@@ -109,7 +106,12 @@ namespace winform
                 tenHocCu = txtTenHocCu.Text.Trim(),
                 idLoaiHocCu = (int)cboLoaiHocCu.SelectedValue,
                 soLuong = (int)numSoLuong.Value,
-                donViTinh = txtDonViTinh.Text.Trim(),
+
+                // --- LẤY GIÁ TRỊ TỪ COMBOBOX ---
+                // Thuộc tính .Text hoặc .SelectedItem.ToString() đều lấy được chuỗi hiển thị
+                donViTinh = cboDonViTinh.Text.Trim(),
+                // --------------------------------
+
                 giaBan = (double)numGiaBan.Value
             };
 
@@ -126,7 +128,7 @@ namespace winform
                     if (response.IsSuccessStatusCode)
                     {
                         MessageBox.Show("Thêm họa cụ thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        this.Close(); // Đóng form sau khi thêm thành công
+                        this.Close();
                     }
                     else
                     {

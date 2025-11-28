@@ -21,12 +21,16 @@ namespace winform
             public string MoTa { get; set; }
             public double HocPhi { get; set; }
             public int SoLuongBuoi { get; set; }
-            public double GiamGia { get; set; } // Số tiền giảm (nếu có logic KM)
-            public string HinhAnh { get; set; } // Tên file ảnh
-            public int? IdChuyenMon { get; set; } // Cần bổ sung vào API nếu chưa có để lọc
+            // GiamGia giờ là giá trị tiền (VND)
+            public double GiamGia { get; set; }
+            public string HinhAnh { get; set; }
+            public int? IdChuyenMon { get; set; }
 
-            // Thuộc tính phụ để hiển thị trên Grid (nếu cần)
+            // Thuộc tính phụ để hiển thị trên Grid (Học phí)
             public string HocPhiHienThi => HocPhi.ToString("N0");
+
+            // ĐÃ SỬA: Hiển thị Giảm Giá dưới dạng tiền (VND)
+            public string GiamGiaHienThi => GiamGia.ToString("N0");
         }
 
         public class ChuyenMonDTO
@@ -54,8 +58,15 @@ namespace winform
             dgvKhoaHoc.AutoGenerateColumns = false;
             dgvKhoaHoc.Columns.Clear();
 
-            // 1. Cột ID (Ẩn)
-            dgvKhoaHoc.Columns.Add(new DataGridViewTextBoxColumn { Name = "IdKhoaHoc", DataPropertyName = "IdKhoaHoc", Visible = false });
+            // 1. Cột ID (HIỂN THỊ)
+            dgvKhoaHoc.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "IdKhoaHoc",
+                DataPropertyName = "IdKhoaHoc",
+                HeaderText = "ID",
+                Width = 60,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
+            });
 
             // 2. Cột Tên Khóa Học
             dgvKhoaHoc.Columns.Add(new DataGridViewTextBoxColumn
@@ -63,6 +74,7 @@ namespace winform
                 Name = "TenKhoaHoc",
                 DataPropertyName = "TenKhoaHoc",
                 HeaderText = "Tên Khóa Học",
+                // Giữ AutoSizeMode.Fill để lấp đầy không gian
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
             });
 
@@ -72,23 +84,35 @@ namespace winform
                 Name = "HocPhi",
                 DataPropertyName = "HocPhi",
                 HeaderText = "Học Phí (VNĐ)",
-                Width = 120
+                Width = 140
             };
+            // Định dạng tiền tệ và căn phải
             colGia.DefaultCellStyle.Format = "N0";
             colGia.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dgvKhoaHoc.Columns.Add(colGia);
 
-            // 4. Cột Số Buổi
+            // 4. Cột Giảm Giá (ĐÃ SỬA để hiển thị tiền)
+            var colGiamGia = new DataGridViewTextBoxColumn
+            {
+                Name = "GiamGia",
+                DataPropertyName = "GiamGiaHienThi", // Sử dụng GiamGiaHienThi đã sửa
+                HeaderText = "Giảm Giá (VNĐ)",
+                Width = 120 // Tăng chiều rộng
+            };
+            colGiamGia.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight; // Căn phải cho giá trị tiền
+            dgvKhoaHoc.Columns.Add(colGiamGia);
+
+            // 5. Cột Số Buổi
             dgvKhoaHoc.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "SoLuongBuoi",
                 DataPropertyName = "SoLuongBuoi",
                 HeaderText = "Số Buổi",
-                Width = 100,
+                Width = 80,
                 DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             });
 
-            // 5. Cột Sửa (Button Image hoặc Text)
+            // 6. Cột Thao Tác (Button Image hoặc Text)
             var btnEdit = new DataGridViewButtonColumn();
             btnEdit.Name = "btnEdit";
             btnEdit.HeaderText = "Thao tác";
@@ -111,7 +135,7 @@ namespace winform
             // Grid Actions
             dgvKhoaHoc.CellClick += DgvKhoaHoc_CellClick;
 
-           
+
         }
 
         // --- LOAD DATA ---
@@ -140,6 +164,7 @@ namespace winform
                     if (resKH.IsSuccessStatusCode)
                     {
                         var jsonKH = await resKH.Content.ReadAsStringAsync();
+                        // API hiện trả về giá trị tiền giảm
                         _originalList = JsonConvert.DeserializeObject<List<KhoaHocViewDTO>>(jsonKH);
 
                         // Hiển thị lên lưới
@@ -156,26 +181,23 @@ namespace winform
         private void FilterData()
         {
             if (_originalList == null) return;
-
             var query = _originalList.AsQueryable();
 
-            // 1. Lọc theo tên (Search Text)
+            // 1. Lọc theo tên HOẶC ID (Search Text)
             if (!string.IsNullOrWhiteSpace(txtSearch.Text))
             {
                 string key = txtSearch.Text.ToLower();
-                query = query.Where(x => x.TenKhoaHoc.ToLower().Contains(key));
+                query = query.Where(x =>
+                    x.TenKhoaHoc.ToLower().Contains(key) ||           // Tìm theo tên
+                    x.IdKhoaHoc.ToString().Contains(key)              // Tìm theo ID
+                );
             }
 
             // 2. Lọc theo Chuyên môn (ComboBox)
-            // Lưu ý: Hiện tại API GetAllKhoaHoc chưa trả về IdChuyenMon ở lớp ngoài cùng
-            // Nếu API của bạn trả về IdChuyenMon trong object con hoặc chưa có, bạn cần bổ sung vào API
-            // Giả sử bạn ĐÃ CÓ IdChuyenMon trong DTO:
-            
             if (cboChuyenMon.SelectedIndex != -1 && cboChuyenMon.SelectedValue is int idCM)
             {
                 query = query.Where(x => x.IdChuyenMon == idCM);
             }
-            
 
             dgvKhoaHoc.DataSource = query.ToList();
         }
@@ -184,13 +206,13 @@ namespace winform
 
         private void BtnThem_Click(object sender, EventArgs e)
         {
-            // Mở form chi tiết với ID = -1 (Chế độ Thêm mới)
+            //Mở form chi tiết với ID = -1(Chế độ Thêm mới)
             frmChiTietKhoaHoc f = new frmChiTietKhoaHoc(-1);
             if (f.ShowDialog() == DialogResult.OK)
             {
-                // Nếu thêm thành công (Form con trả về OK) -> Reload lại danh sách
                 LoadAllData();
             }
+            //MessageBox.Show("Chức năng thêm khóa học đang được phát triển.");
         }
 
         private void DgvKhoaHoc_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -201,21 +223,21 @@ namespace winform
                 // Lấy ID khóa học
                 int idKhoaHoc = Convert.ToInt32(dgvKhoaHoc.Rows[e.RowIndex].Cells["IdKhoaHoc"].Value);
 
-                // Mở form sửa
+                //Mở form sửa
                 frmChiTietKhoaHoc f = new frmChiTietKhoaHoc(idKhoaHoc);
                 if (f.ShowDialog() == DialogResult.OK)
                 {
                     LoadAllData(); // Reload nếu có sửa đổi
                 }
+                //MessageBox.Show($"Mở chi tiết khóa học ID: {idKhoaHoc}");
             }
         }
 
-        
 
-        private void btnQLChuyenMon_Click(object sender, EventArgs e)
+        private void btnQLChuyenMon_Click_1(object sender, EventArgs e)
         {
-            frmQLChuyenMon f= new frmQLChuyenMon();
-            if(f.ShowDialog() == DialogResult.OK)
+            frmQLChuyenMon f = new frmQLChuyenMon();
+            if (f.ShowDialog() == DialogResult.OK)
             {
                 LoadAllData(); // Reload nếu có sửa đổi
             }

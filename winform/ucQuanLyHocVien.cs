@@ -14,42 +14,31 @@ namespace winform
 {
     public partial class ucQuanLyHocVien : UserControl
     {
-        // global variables
+        // Global variables
         public dynamic dataHocVien;
         public dynamic dataKhoaHoc;
 
         private List<object> originalKhoaHocList;
         private List<object> originalLopHocList;
 
-        private bool checkInit=false;
+        private bool checkInit = false;
+
         public ucQuanLyHocVien()
         {
             InitializeComponent();
+
+            // Kích hoạt tính năng tìm kiếm ngay khi gõ
+            txt_TimKiem.TextChanged += (s, e) => ApplyFilters();
+
             LoadData();
             checkInit = true;
         }
-       
+
         public async void LoadData()
-        { 
-             dataHocVien = await UCQuanLyHocVien.GetHocVien();
-            if (dataHocVien != null)
-            {
-                this.Invoke((MethodInvoker)delegate
-                {
-                    try
-                    {
-                        dgv_DanhSachHV.Rows.Clear();
-                        foreach (var hv in dataHocVien)
-                        {
-                            dgv_DanhSachHV.Rows.Add(hv.tenHv, hv.ngaySinh.ToString("dd/MM/yyyy"),hv.gioiTinh, hv.phuHuynh);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Lỗi khi tải dữ liệu học viên: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                });
-            }
+        {
+            dataHocVien = await UCQuanLyHocVien.GetHocVien();
+            // Load danh sách ban đầu (Đã cập nhật để bao gồm ID)
+            ApplyFilters();
 
             dataKhoaHoc = await UCQuanLyHocVien.GetKhoaHoc();
             if (dataKhoaHoc != null)
@@ -61,9 +50,11 @@ namespace winform
                         comboBox_KhoaHoc.SelectedIndexChanged -= comboBox_KhoaHoc_SelectedIndexChanged;
                         var khoaHocList = new List<object>();
 
+                        // Tạo mục mặc định
+                        khoaHocList.Add(new { Text = "--- Chọn Khóa Học ---", Value = -1 });
+
                         foreach (var kh in dataKhoaHoc)
                         {
-                            // Chỉ thêm khóa học vào ComboBox đầu tiên
                             khoaHocList.Add(new { Text = (string)kh.tenKhoaHoc, Value = (int)kh.idKhoaHoc });
                         }
 
@@ -72,31 +63,32 @@ namespace winform
                         comboBox_KhoaHoc.DataSource = khoaHocList;
                         comboBox_KhoaHoc.DisplayMember = "Text";
                         comboBox_KhoaHoc.ValueMember = "Value";
-                        comboBox_KhoaHoc.SelectedIndex = -1;
 
-                        // ComboBox lớp học sẽ được cập nhật khi chọn khóa học
+                        comboBox_KhoaHoc.SelectedIndex = 0;
+
                         comboBox_LopHoc.DataSource = null;
-                        comboBox_LopHoc.SelectedIndex = -1;
-
 
                         comboBox_KhoaHoc.SelectedIndexChanged += comboBox_KhoaHoc_SelectedIndexChanged;
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Lỗi khi tải dữ liệu khóa học: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Console.WriteLine(ex.Message);
+                        MessageBox.Show("Lỗi tải dữ liệu khóa học: " + ex.Message);
                     }
                 });
             }
-
-
         }
-
-        
 
         private void LoadLopHocByKhoaHoc(int khoaHocId)
         {
+            if (khoaHocId == -1)
+            {
+                comboBox_LopHoc.DataSource = null;
+                return;
+            }
+
             var lopHocList = new List<object>();
+
+            lopHocList.Add(new { Text = "--- Chọn Lớp Học ---", Value = -1 });
 
             if (dataKhoaHoc != null)
             {
@@ -113,26 +105,16 @@ namespace winform
                                     Text = (string)lopHoc.tenLopHoc,
                                     Value = (int)lopHoc.idLopHoc
                                 });
-                                Console.WriteLine("Added class: " + (string)lopHoc.tenLopHoc);
                             }
                         }
                         break;
                     }
                 }
             }
-            else
-            {
-                Console.WriteLine("dataKhoaHoc is null");
-            }
-            if(lopHocList.Count == 0)
-            {
-                Console.WriteLine("No classes found for the selected course ID: " + khoaHocId);
-                comboBox_LopHoc.DisplayMember = "Text";
-                comboBox_LopHoc.ValueMember = "Value";
-                
-                comboBox_LopHoc.DataSource = null;
 
-                comboBox_LopHoc.SelectedIndex = -1;
+            if (lopHocList.Count == 1)
+            {
+                comboBox_LopHoc.DataSource = null;
             }
             else
             {
@@ -141,100 +123,120 @@ namespace winform
                 originalLopHocList = new List<object>(lopHocList);
                 comboBox_LopHoc.DataSource = lopHocList;
 
-                comboBox_LopHoc.SelectedIndex = -1;
+                comboBox_LopHoc.SelectedIndex = 0;
             }
-               
         }
 
-        // Thêm event handler cho SelectedIndexChanged
         private void comboBox_KhoaHoc_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!checkInit) return; // Bỏ qua sự kiện trong quá trình khởi tạo
+            if (!checkInit) return;
             ComboBox cb = sender as ComboBox;
-            if (cb.SelectedItem != null && cb.SelectedValue != null&& cb.SelectedIndex!=-1)
+
+            if (cb.SelectedItem != null && cb.SelectedValue != null && (int)cb.SelectedValue != -1)
             {
                 int selectedKhoaHocId = Convert.ToInt32(cb.SelectedValue);
                 LoadLopHocByKhoaHoc(selectedKhoaHocId);
-
-                Console.WriteLine($"Đã chọn khóa học: {cb.Text} (ID: {selectedKhoaHocId})");
+            }
+            else
+            {
+                comboBox_LopHoc.DataSource = null;
+                ApplyFilters();
             }
         }
 
         private void btn_Loc_Click(object sender, EventArgs e)
         {
-            if (!checkInit) return;
-            if (comboBox_LopHoc.SelectedItem == null || comboBox_LopHoc.SelectedIndex == -1) return;
-            int selectedLopHocId = Convert.ToInt32(comboBox_LopHoc.SelectedValue);
-
-
-
-
+            ApplyFilters();
         }
 
-        private void FilterByLopHoc(int lopHocId)
+        // --- CẬP NHẬT HÀM LỌC ĐỂ THÊM ID VÀO GRID ---
+        private void ApplyFilters()
         {
-            var filteredHocVien = new List<dynamic>();
-            
+            if (dataHocVien == null) return;
+
+            string keyword = txt_TimKiem.Text.ToLower().Trim();
+            int? selectedLopId = null;
+
+            if (checkInit
+                && comboBox_LopHoc.SelectedIndex != -1
+                && comboBox_LopHoc.SelectedValue != null
+                && (int)comboBox_LopHoc.SelectedValue != -1)
+            {
+                selectedLopId = Convert.ToInt32(comboBox_LopHoc.SelectedValue);
+            }
+
             this.Invoke((MethodInvoker)delegate
             {
                 dgv_DanhSachHV.Rows.Clear();
                 foreach (var hv in dataHocVien)
                 {
-                    foreach (var lh in hv.hoaDonKhoaHocs)
+                    bool matchName = true;
+                    bool matchClass = true;
+
+                    if (!string.IsNullOrEmpty(keyword))
                     {
-                        if ((int)lh.idLopHoc == lopHocId)
+                        string ten = (string)hv.tenHv;
+                        if (string.IsNullOrEmpty(ten) || !ten.ToLower().Contains(keyword))
                         {
-                            dgv_DanhSachHV.Rows.Add(hv.tenHv, hv.ngaySinh.ToString("dd/MM/yyyy"), hv.gioiTinh, hv.phuHuynh);
-                            break;
+                            matchName = false;
                         }
                     }
+
+                    if (selectedLopId.HasValue)
+                    {
+                        bool foundClass = false;
+                        if (hv.hoaDonKhoaHocs != null)
+                        {
+                            foreach (var lh in hv.hoaDonKhoaHocs)
+                            {
+                                if ((int)lh.idLopHoc == selectedLopId.Value)
+                                {
+                                    foundClass = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!foundClass) matchClass = false;
+                    }
+
+                    if (matchName && matchClass)
+                    {
+                        // --- ĐÃ THÊM: hv.idHocVien VÀO ĐẦU ---
+                        dgv_DanhSachHV.Rows.Add(hv.idHocVien, hv.tenHv, hv.ngaySinh.ToString("dd/MM/yyyy"), hv.gioiTinh, hv.phuHuynh);
+                    }
                 }
-                
             });
         }
 
         private void btn_Reset_Click(object sender, EventArgs e)
         {
             if (!checkInit) return;
+
+            txt_TimKiem.Text = "";
             comboBox_KhoaHoc.SelectedIndexChanged -= comboBox_KhoaHoc_SelectedIndexChanged;
-            comboBox_KhoaHoc.DataSource = originalKhoaHocList;
-            comboBox_KhoaHoc.DisplayMember = "Text";
-            comboBox_KhoaHoc.ValueMember = "Value";
-            comboBox_KhoaHoc.SelectedIndex = -1;
+
+            if (originalKhoaHocList != null)
+            {
+                comboBox_KhoaHoc.DataSource = originalKhoaHocList;
+                comboBox_KhoaHoc.DisplayMember = "Text";
+                comboBox_KhoaHoc.ValueMember = "Value";
+            }
+            comboBox_KhoaHoc.SelectedIndex = 0;
 
             comboBox_LopHoc.DataSource = null;
-            comboBox_LopHoc.SelectedIndex = -1;
+
             comboBox_KhoaHoc.SelectedIndexChanged += comboBox_KhoaHoc_SelectedIndexChanged;
 
-            this.Invoke((MethodInvoker)delegate
-            {
-                try
-                {
-                    dgv_DanhSachHV.Rows.Clear();
-                    foreach (var hv in dataHocVien)
-                    {
-                        dgv_DanhSachHV.Rows.Add(hv.tenHv, hv.ngaySinh.ToString("dd/MM/yyyy"), hv.gioiTinh, hv.phuHuynh);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Lỗi khi tải dữ liệu học viên: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            });
+            ApplyFilters();
         }
 
         private void btn_ThemHocVien_Click(object sender, EventArgs e)
         {
-          
-            // Mở form dạng Dialog
             frmThemHocVien frm = new frmThemHocVien();
-
             if (frm.ShowDialog() == DialogResult.OK)
             {
-                // Load lại bảng dữ liệu danh sách học viên
                 LoadData();
             }
-        
         }
 
         private void btn_XuatExcel_Click(object sender, EventArgs e)
@@ -245,14 +247,12 @@ namespace winform
                 return;
             }
 
-            // 2. Mở hộp thoại chọn nơi lưu file
             using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xlsx", FileName = "DanhSachHocVien.xlsx" })
             {
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     try
                     {
-                        // 3. Gọi hàm xuất Excel
                         XuatRaExcel(dgv_DanhSachHV, sfd.FileName);
                         MessageBox.Show("Xuất file Excel thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
@@ -266,46 +266,37 @@ namespace winform
 
         private void XuatRaExcel(DataGridView dgv, string filePath)
         {
-            // Tạo một Workbook mới
             using (var workbook = new XLWorkbook())
             {
-                // Tạo một Worksheet
                 var worksheet = workbook.Worksheets.Add("DanhSachHocVien");
 
-                // --- 1. XỬ LÝ TIÊU ĐỀ CỘT ---
                 for (int i = 0; i < dgv.Columns.Count; i++)
                 {
-                    // Dòng 1 là tiêu đề. Excel bắt đầu từ dòng 1, cột 1 (không phải 0)
                     worksheet.Cell(1, i + 1).Value = dgv.Columns[i].HeaderText;
-
-                    // Tô đậm và chỉnh màu nền cho tiêu đề đẹp hơn
                     var headerCell = worksheet.Cell(1, i + 1);
                     headerCell.Style.Font.Bold = true;
                     headerCell.Style.Fill.BackgroundColor = XLColor.CornflowerBlue;
                     headerCell.Style.Font.FontColor = XLColor.White;
                 }
 
-                // --- 2. XỬ LÝ DỮ LIỆU DÒNG ---
                 for (int i = 0; i < dgv.Rows.Count; i++)
                 {
                     for (int j = 0; j < dgv.Columns.Count; j++)
                     {
-                        // Kiểm tra null để tránh lỗi
                         var cellValue = dgv.Rows[i].Cells[j].Value;
                         string valueStr = cellValue != null ? cellValue.ToString() : "";
-
-                        // Ghi dữ liệu vào Excel (Dòng bắt đầu từ 2 vì dòng 1 là Header)
                         worksheet.Cell(i + 2, j + 1).Value = valueStr;
                     }
                 }
 
-                // --- 3. TỰ ĐỘNG CĂN CHỈNH ĐỘ RỘNG CỘT ---
                 worksheet.Columns().AdjustToContents();
-
-                // --- 4. LƯU FILE ---
                 workbook.SaveAs(filePath);
             }
         }
 
+        private void txt_TimKiem_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
