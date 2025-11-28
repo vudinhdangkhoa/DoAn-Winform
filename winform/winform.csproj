@@ -203,6 +203,12 @@
     <Compile Include="ucQLKhuyenMai.Designer.cs">
       <DependentUpon>ucQLKhuyenMai.cs</DependentUpon>
     </Compile>
+    <Compile Include="ucQlNhanVien.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucQlNhanVien.Designer.cs">
+      <DependentUpon>ucQlNhanVien.cs</DependentUpon>
+    </Compile>
     <Compile Include="ucQLThongKe.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -238,6 +244,12 @@
     </Compile>
     <Compile Include="ucQuanLyLopHoc.Designer.cs">
       <DependentUpon>ucQuanLyLopHoc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ucSaoLuuKhoiPhuc.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ucSaoLuuKhoiPhuc.Designer.cs">
+      <DependentUpon>ucSaoLuuKhoiPhuc.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="DanhNhap.resx">
       <DependentUpon>DanhNhap.cs</DependentUpon>
@@ -300,6 +312,9 @@
     <EmbeddedResource Include="ucQLKhuyenMai.resx">
       <DependentUpon>ucQLKhuyenMai.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ucQlNhanVien.resx">
+      <DependentUpon>ucQlNhanVien.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ucQLThongKe.resx">
       <DependentUpon>ucQLThongKe.cs</DependentUpon>
     </EmbeddedResource>
@@ -317,6 +332,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ucQuanLyLopHoc.resx">
       <DependentUpon>ucQuanLyLopHoc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ucSaoLuuKhoiPhuc.resx">
+      <DependentUpon>ucSaoLuuKhoiPhuc.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

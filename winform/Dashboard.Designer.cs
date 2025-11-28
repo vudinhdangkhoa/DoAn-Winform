@@ -45,6 +45,8 @@
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblLogo = new System.Windows.Forms.Label();
             this.contentPanel = new System.Windows.Forms.Panel();
+            this.btn_SaoLuu = new System.Windows.Forms.Button();
+            this.btn_QLNhanVien = new System.Windows.Forms.Button();
             this.sidebarPanel.SuspendLayout();
             this.headerPanel.SuspendLayout();
             this.SuspendLayout();
@@ -52,6 +54,8 @@
             // sidebarPanel
             // 
             this.sidebarPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.sidebarPanel.Controls.Add(this.btn_QLNhanVien);
+            this.sidebarPanel.Controls.Add(this.btn_SaoLuu);
             this.sidebarPanel.Controls.Add(this.button2);
             this.sidebarPanel.Controls.Add(this.btn_QuanLyGiaoVien);
             this.sidebarPanel.Controls.Add(this.btn_QuanLyHoaCu);
@@ -92,7 +96,7 @@
             this.btn_QuanLyGiaoVien.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_QuanLyGiaoVien.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_QuanLyGiaoVien.ForeColor = System.Drawing.SystemColors.Control;
-            this.btn_QuanLyGiaoVien.Location = new System.Drawing.Point(3, 391);
+            this.btn_QuanLyGiaoVien.Location = new System.Drawing.Point(0, 390);
             this.btn_QuanLyGiaoVien.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btn_QuanLyGiaoVien.Name = "btn_QuanLyGiaoVien";
             this.btn_QuanLyGiaoVien.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
@@ -315,6 +319,42 @@
             this.contentPanel.Size = new System.Drawing.Size(1149, 780);
             this.contentPanel.TabIndex = 2;
             // 
+            // btn_SaoLuu
+            // 
+            this.btn_SaoLuu.FlatAppearance.BorderSize = 0;
+            this.btn_SaoLuu.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_SaoLuu.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_SaoLuu.ForeColor = System.Drawing.SystemColors.Control;
+            this.btn_SaoLuu.Location = new System.Drawing.Point(-3, 511);
+            this.btn_SaoLuu.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btn_SaoLuu.Name = "btn_SaoLuu";
+            this.btn_SaoLuu.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
+            this.btn_SaoLuu.Size = new System.Drawing.Size(251, 50);
+            this.btn_SaoLuu.TabIndex = 0;
+            this.btn_SaoLuu.Text = "📈 Sao lưu, khôi phục dữ liệu";
+            this.btn_SaoLuu.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_SaoLuu.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btn_SaoLuu.UseVisualStyleBackColor = true;
+            this.btn_SaoLuu.Click += new System.EventHandler(this.btn_SaoLuu_Click);
+            // 
+            // btn_QLNhanVien
+            // 
+            this.btn_QLNhanVien.FlatAppearance.BorderSize = 0;
+            this.btn_QLNhanVien.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_QLNhanVien.Font = new System.Drawing.Font("Segoe UI", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_QLNhanVien.ForeColor = System.Drawing.SystemColors.Control;
+            this.btn_QLNhanVien.Location = new System.Drawing.Point(-3, 565);
+            this.btn_QLNhanVien.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btn_QLNhanVien.Name = "btn_QLNhanVien";
+            this.btn_QLNhanVien.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
+            this.btn_QLNhanVien.Size = new System.Drawing.Size(251, 50);
+            this.btn_QLNhanVien.TabIndex = 0;
+            this.btn_QLNhanVien.Text = "📈 Quản lý nhân viên";
+            this.btn_QLNhanVien.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_QLNhanVien.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.btn_QLNhanVien.UseVisualStyleBackColor = true;
+            this.btn_QLNhanVien.Click += new System.EventHandler(this.btn_QLNhanVien_Click);
+            // 
             // Dashboard
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -328,6 +368,7 @@
             this.Name = "Dashboard";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Trung tâm Mỹ thuật Sáng tạo - Quản lý";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Dashboard_FormClosing);
             this.Load += new System.EventHandler(this.Dashboard_Load);
             this.sidebarPanel.ResumeLayout(false);
             this.headerPanel.ResumeLayout(false);
@@ -354,5 +395,7 @@
         private System.Windows.Forms.Panel contentPanel;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button btn_QuanLyGiaoVien;
+        private System.Windows.Forms.Button btn_SaoLuu;
+        private System.Windows.Forms.Button btn_QLNhanVien;
     }
 }

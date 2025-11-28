@@ -8,11 +8,12 @@ namespace winform
 {
     public partial class Dashboard : Form
     {
-        private string userRole ; // Có thể thay đổi thành "Nhân viên"
-        private string username ;
+        private string userRole; // Có thể thay đổi thành "Nhân viên"
+        private string username;
         private string userId;
         private Panel activeMenu;
         private Button currentButton;
+        private bool _isLogout = false;
 
         public Dashboard()
         {
@@ -20,10 +21,10 @@ namespace winform
 
         }
 
-        public Dashboard(string userId,string username,string userRole)
+        public Dashboard(string userId, string username, string userRole)
         {
             InitializeComponent();
-           this.userId = userId;
+            this.userId = userId;
             this.username = username;
             this.userRole = userRole;
         }
@@ -41,7 +42,8 @@ namespace winform
             if (InforUser != null)
             {
                 Console.WriteLine(InforUser);
-                this.Invoke((MethodInvoker)delegate {
+                this.Invoke((MethodInvoker)delegate
+                {
                     lblWelcome.Text = $"Xin chào, {InforUser.tenNv}";
                     lblUserRole.Text = InforUser.quyen.ToString(); // Dùng InforUser.quyen
                 });
@@ -59,40 +61,46 @@ namespace winform
         private void loadRoleBasedUI()
         {
             // Ẩn hoặc hiển thị các nút dựa trên vai trò người dùng
-           if(userRole== DungChung.adminRole)
+            if (userRole == DungChung.adminRole)
             {
-                btn_QuanLyHoaCu.Visible = true;
-                btn_QuanLyGiaoVien.Visible = true;
-                btn_QLHocVien.Visible = true;
-                btn_QLKhoaHoc.Visible = true;
-                btn_QLLopHoc.Visible = true;
-                btn_QL_ThuChi.Visible = true;
-                btn_LichHoc.Visible = true;
-                btn_TongQuan.Visible = true;
+                btn_QuanLyHoaCu.Enabled = true;
+                btn_QuanLyGiaoVien.Enabled = true;
+                btn_QLHocVien.Enabled = true;
+                btn_QLKhoaHoc.Enabled = true;
+                btn_QLLopHoc.Enabled = true;
+                btn_QL_ThuChi.Enabled = true;
+                btn_LichHoc.Enabled = true;
+                btn_TongQuan.Enabled = true;
             }
             else
             {
-                if(userRole== DungChung.nhanVienHocVuRole)
+                if (userRole == DungChung.nhanVienHocVuRole)
                 {
-                    btn_QuanLyHoaCu.Visible = false;
-                    btn_QuanLyGiaoVien.Visible = true;
-                    btn_QLHocVien.Visible = true;
-                    btn_QLKhoaHoc.Visible = true;
-                    btn_QLLopHoc.Visible = true;
-                    btn_QL_ThuChi.Visible = false;
-                    btn_LichHoc.Visible = true;
-                    btn_TongQuan.Visible = true;
+                    btn_QuanLyHoaCu.Enabled = false;
+                    btn_QuanLyGiaoVien.Enabled = true;
+                    btn_QLHocVien.Enabled = true;
+                    btn_QLKhoaHoc.Enabled = true;
+                    btn_QLLopHoc.Enabled = true;
+                    btn_QL_ThuChi.Enabled = false;
+                    btn_LichHoc.Enabled = true;
+                    btn_TongQuan.Enabled = true;
+                    btn_SaoLuu.Enabled = false;
+                    btn_QLNhanVien.Enabled = false;
+                    btn_QL_ThuChi.Enabled = false;
                 }
-                else if(userRole== DungChung.nhanVienKhoRole)
+                else if (userRole == DungChung.nhanVienKhoRole)
                 {
-                    btn_QuanLyHoaCu.Visible = true;
-                    btn_QuanLyGiaoVien.Visible = false;
-                    btn_QLHocVien.Visible = false;
-                    btn_QLKhoaHoc.Visible = false;
-                    btn_QLLopHoc.Visible = false;
-                    btn_QL_ThuChi.Visible = false;
-                    btn_LichHoc.Visible = false;
-                    btn_TongQuan.Visible = true;
+                    btn_QuanLyHoaCu.Enabled = true;
+                    btn_QuanLyGiaoVien.Enabled = false;
+                    btn_QLHocVien.Enabled = false;
+                    btn_QLKhoaHoc.Enabled = false;
+                    btn_QLLopHoc.Enabled = false;
+                    btn_QL_ThuChi.Enabled = false;
+                    btn_LichHoc.Enabled = false;
+                    btn_TongQuan.Enabled = true;
+                    btn_SaoLuu.Enabled = false;
+                    btn_QLNhanVien.Enabled = false;
+                    btn_QL_ThuChi.Enabled = false;
                 }
             }
         }
@@ -126,11 +134,11 @@ namespace winform
                 currentButton.BackColor = Color.FromArgb(52, 152, 219); // Màu xanh làm điểm nhấn
                 currentButton.ForeColor = Color.White;
                 currentButton.Enabled = false;
-                
+
             }
         }
 
-       
+
 
         private void headerPanel_Paint(object sender, PaintEventArgs e)
         {
@@ -143,7 +151,7 @@ namespace winform
             }
         }
 
-        
+
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
@@ -158,6 +166,7 @@ namespace winform
                 // Quay về form đăng nhập (thay Form1 bằng form login của bạn)
                 // Form1 loginForm = new Form1();
                 // loginForm.Show();
+                _isLogout = true;
                 this.Close();
             }
         }
@@ -197,12 +206,12 @@ namespace winform
             LoadUserControl(ucQLKhuyenMai);
         }
 
-       
+
 
         private void btn_QuanLyHoaCu_Click(object sender, EventArgs e)
         {
             ActivateButton(sender);
-            ucQuanLyHoaCu ucQLHoaCu = new ucQuanLyHoaCu(int.Parse(userId),username);
+            ucQuanLyHoaCu ucQLHoaCu = new ucQuanLyHoaCu(int.Parse(userId), username);
             LoadUserControl(ucQLHoaCu);
         }
 
@@ -225,6 +234,28 @@ namespace winform
             ActivateButton(sender);
             ucQLThongKe ucThongKe = new ucQLThongKe();
             LoadUserControl(ucThongKe);
+        }
+
+        private void btn_SaoLuu_Click(object sender, EventArgs e)
+        {
+            ActivateButton(sender);
+            ucSaoLuuKhoiPhuc ucSaoLuu = new ucSaoLuuKhoiPhuc();
+            LoadUserControl(ucSaoLuu);
+        }
+
+        private void Dashboard_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!_isLogout)
+            {
+                Application.Exit();
+            }
+        }
+
+        private void btn_QLNhanVien_Click(object sender, EventArgs e)
+        {
+            ActivateButton(sender);
+            ucQlNhanVien ucQlNhanVien = new ucQlNhanVien();
+            LoadUserControl(ucQlNhanVien);
         }
     }
 }

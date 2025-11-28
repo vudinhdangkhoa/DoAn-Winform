@@ -83,10 +83,13 @@ namespace winform
                         string role = jObject["role"]?.ToString();
                         if (status == "staff")
                         {
+                            txtPassword.Clear();
+                            txtUsername.Clear();
                             this.Hide();
                             Dashboard dashboard = new Dashboard(userId,username,role);
-                            dashboard.ShowDialog();
-                            this.Close();
+                            dashboard.FormClosed += (s, args) => this.Show();
+                            dashboard.Show();
+                            
                         }
                         else
                         {
