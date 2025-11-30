@@ -186,7 +186,7 @@ namespace winform
         {
             // 1. Panel chính (Dùng Gradient)
             Guna.UI2.WinForms.Guna2GradientPanel p = new Guna.UI2.WinForms.Guna2GradientPanel();
-            p.Size = new Size(240, 80); // Tăng kích thước cho thoáng
+            p.Size = new Size(280, 80); // Tăng kích thước cho thoáng
             p.FillColor = colorStart;
             p.FillColor2 = colorEnd;
             p.BorderRadius = 15;
@@ -471,7 +471,7 @@ namespace winform
 
                                 wb.SaveAs(sfd.FileName);
                                 MessageBox.Show("Xuất Excel thành công!");
-                               
+
                             }
                         }
                     }
@@ -536,7 +536,7 @@ namespace winform
                                 ws.Columns().AdjustToContents();
                                 wb.SaveAs(sfd.FileName);
                                 MessageBox.Show("Xuất Excel thành công!");
-                                
+
                             }
                         }
                     }

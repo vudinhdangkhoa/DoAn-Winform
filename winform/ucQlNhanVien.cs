@@ -1,15 +1,12 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-
 using System.Data;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Text.RegularExpressions; // Cần thêm cái này để check SĐT
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
 
 namespace winform
 {
@@ -49,7 +46,9 @@ namespace winform
         public ucQlNhanVien()
         {
             InitializeComponent();
-            InitializeGrid();
+
+            // QUAN TRỌNG: Ngăn Grid tự động tạo cột thừa, giữ nguyên cột đẹp đã thiết kế
+            dgvNhanVien.AutoGenerateColumns = false;
 
             this.Load += UcQlNhanVien_Load;
             btnRefresh.Click += (s, e) => LoadData();
@@ -61,21 +60,12 @@ namespace winform
             btnXoa.Click += BtnXoa_Click;
             btnBoQua.Click += (s, e) => ResetForm();
 
-            // Thêm sự kiện chỉ cho nhập số vào ô SĐT
+            // Ràng buộc nhập liệu
             txtSdt.KeyPress += TxtSdt_KeyPress;
+            txtTen.KeyPress += TxtTen_KeyPress;
         }
 
-        private void InitializeGrid()
-        {
-            dgvNhanVien.AutoGenerateColumns = false;
-            dgvNhanVien.Columns.Clear();
-
-            dgvNhanVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "UserId", Name = "UserId", Visible = false });
-            dgvNhanVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "TenNv", HeaderText = "Họ Tên", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            dgvNhanVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Sdt", HeaderText = "Số Điện Thoại", Width = 120 });
-            dgvNhanVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Mail", HeaderText = "Email", Width = 180 });
-            dgvNhanVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "TenQuyen", HeaderText = "Quyền Hạn", Width = 120 });
-        }
+        // Đã xóa hàm InitializeGrid() vì Designer đã làm việc này rồi
 
         private async void UcQlNhanVien_Load(object sender, EventArgs e)
         {
@@ -85,37 +75,47 @@ namespace winform
 
         // ================= VALIDATION HELPERS =================
 
-        // Hàm kiểm tra định dạng Email
         private bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return false;
-
             try
             {
-                // Pattern check email cơ bản
                 string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
                 return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
             }
-            catch
-            {
-                return false;
-            }
+            catch { return false; }
         }
 
-        // Hàm kiểm tra SĐT (VN: 10 số, bắt đầu bằng 0)
         private bool IsValidPhone(string phone)
         {
             if (string.IsNullOrWhiteSpace(phone)) return false;
-            // Regex: Bắt đầu bằng 0, theo sau là 9 chữ số
+            // Kiểm tra chính xác 10 số và bắt đầu bằng 0
             return Regex.IsMatch(phone, @"^0\d{9}$");
         }
 
-        // Chặn nhập chữ vào ô SĐT ngay khi gõ
+        private bool IsValidName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            // Chỉ cho phép chữ cái và khoảng trắng
+            return Regex.IsMatch(name, @"^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\s]+$");
+        }
+
         private void TxtSdt_KeyPress(object sender, KeyPressEventArgs e)
         {
+            // Chặn chữ ngay khi nhập, chỉ cho nhập số và nút xóa
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
             {
-                e.Handled = true; // Chặn ký tự không phải số
+                e.Handled = true;
+            }
+        }
+
+        private void TxtTen_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Chặn số và ký tự đặc biệt ngay khi nhập
+            // Chỉ cho phép chữ và khoảng trắng
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
+            {
+                e.Handled = true;
             }
         }
 
@@ -149,7 +149,11 @@ namespace winform
                     }
                 }
             }
-            catch (Exception ex) { MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message, "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void FilterData()
@@ -173,14 +177,14 @@ namespace winform
             txtSdt.Clear();
             txtEmail.Clear();
             txtMatKhau.Clear();
-            txtMatKhau.PlaceholderText = "";
+            txtMatKhau.PlaceholderText = "Tối thiểu 6 ký tự";
 
             if (cboQuyen.Items.Count > 0) cboQuyen.SelectedIndex = 0;
 
             btnThem.Enabled = true;
             btnLuu.Enabled = false;
             btnXoa.Enabled = false;
-            txtEmail.ReadOnly = false; // Mở khóa email để nhập mới
+            txtEmail.ReadOnly = false; // Khi thêm mới được nhập email
 
             txtTen.Focus();
         }
@@ -198,11 +202,8 @@ namespace winform
             txtSdt.Text = item.Sdt;
             txtEmail.Text = item.Mail;
             txtMatKhau.Text = "";
-            txtMatKhau.PlaceholderText = "Nhập nếu muốn đổi mật khẩu";
+            txtMatKhau.PlaceholderText = "Để trống nếu không đổi";
 
-            // Chọn quyền chính xác theo ID (nếu API trả về IdQuyen)
-            // Nếu API chưa trả IdQuyen, bạn cần map thủ công qua TenQuyen hoặc sửa API
-            // Giả sử NhanVienViewDTO có IdQuyen (như bạn đã thêm trong API GetAllNhanVien)
             if (item.IdQuyen > 0)
                 cboQuyen.SelectedValue = item.IdQuyen;
             else
@@ -212,148 +213,146 @@ namespace winform
             btnLuu.Enabled = true;
             btnXoa.Enabled = true;
 
-            // Khi sửa, có thể cho phép sửa email nhưng server sẽ check trùng
+            // Logic cũ: txtEmail.ReadOnly = false; 
+            // Tuy nhiên, thường khi update người ta hạn chế cho sửa Email để tránh lỗi hệ thống, 
+            // nếu bạn muốn cho sửa thì để false, không thì để true.
             txtEmail.ReadOnly = false;
         }
 
         private void BtnThem_Click(object sender, EventArgs e)
         {
+            // Nút "Thêm Mới" chỉ reset form để người dùng nhập
             ResetForm();
-            btnLuu.Enabled = true;
-            btnThem.Enabled = false;
+            btnLuu.Enabled = true;     // Sáng nút Lưu
+            btnThem.Enabled = false;   // Ẩn nút Thêm
         }
 
         private async void BtnLuu_Click(object sender, EventArgs e)
         {
-            // 1. Lấy dữ liệu và Trim() khoảng trắng thừa
+            // 1. Lấy dữ liệu và Trim
             string ten = txtTen.Text.Trim();
             string sdt = txtSdt.Text.Trim();
             string email = txtEmail.Text.Trim();
             string matKhau = txtMatKhau.Text.Trim();
             int idQuyen = Convert.ToInt32(cboQuyen.SelectedValue);
 
-            // 2. VALIDATION (RÀNG BUỘC DỮ LIỆU)
+            // 2. VALIDATION
 
-            // Kiểm tra rỗng
-            if (string.IsNullOrEmpty(ten))
+            if (string.IsNullOrEmpty(ten)) { ShowWarning("Vui lòng nhập họ tên nhân viên.", txtTen); return; }
+            if (!IsValidName(ten)) { ShowWarning("Họ tên không hợp lệ (không chứa số/kí tự lạ).", txtTen); return; }
+
+            if (string.IsNullOrEmpty(sdt)) { ShowWarning("Vui lòng nhập số điện thoại.", txtSdt); return; }
+            if (!IsValidPhone(sdt)) { ShowWarning("Số điện thoại phải đủ 10 số và bắt đầu bằng 0.", txtSdt); return; }
+
+            if (string.IsNullOrEmpty(email)) { ShowWarning("Vui lòng nhập email.", txtEmail); return; }
+            if (!IsValidEmail(email)) { ShowWarning("Định dạng Email không hợp lệ.", txtEmail); return; }
+
+            // Logic check mật khẩu
+            if (_selectedId == -1) // Đang thêm mới
             {
-                MessageBox.Show("Vui lòng nhập họ tên nhân viên.", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtTen.Focus(); return;
+                if (string.IsNullOrEmpty(matKhau)) { ShowWarning("Vui lòng nhập mật khẩu cho nhân viên mới.", txtMatKhau); return; }
+                if (matKhau.Length < 6) { ShowWarning("Mật khẩu phải có ít nhất 6 ký tự.", txtMatKhau); return; }
             }
-
-            // Kiểm tra SĐT
-            if (!IsValidPhone(sdt))
+            else // Đang cập nhật
             {
-                MessageBox.Show("Số điện thoại không hợp lệ (Phải là 10 số, bắt đầu bằng số 0).", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtSdt.Focus(); return;
-            }
-
-            // Kiểm tra Email
-            if (!IsValidEmail(email))
-            {
-                MessageBox.Show("Định dạng Email không hợp lệ.", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtEmail.Focus(); return;
-            }
-
-            // Kiểm tra Mật khẩu (Chỉ bắt buộc khi Thêm Mới)
-            if (_selectedId == -1)
-            {
-                if (string.IsNullOrEmpty(matKhau))
+                // Nếu có nhập mật khẩu thì mới check độ dài
+                if (!string.IsNullOrEmpty(matKhau) && matKhau.Length < 6)
                 {
-                    MessageBox.Show("Vui lòng nhập mật khẩu cho nhân viên mới.", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    txtMatKhau.Focus(); return;
-                }
-                if (matKhau.Length < 6)
-                {
-                    MessageBox.Show("Mật khẩu phải có ít nhất 6 ký tự.", "Bảo mật yếu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    txtMatKhau.Focus(); return;
+                    ShowWarning("Mật khẩu mới phải có ít nhất 6 ký tự.", txtMatKhau); return;
                 }
             }
 
-            // 3. Prepare Payload
+            // 3. GỌI API
             var payload = new AddNhanVienPayload
             {
                 TenNv = ten,
                 Sdt = sdt,
                 Mail = email,
                 IdQuyen = idQuyen,
-                // Nếu đang update và ô mật khẩu trống -> Gửi null để Server giữ nguyên pass cũ
-                MatKhau = string.IsNullOrEmpty(matKhau) ? null : matKhau
+                MatKhau = matKhau
             };
 
-            // 4. Call API
-            try
+            using (HttpClient client = new HttpClient())
             {
-                using (HttpClient client = new HttpClient())
+                HttpResponseMessage response;
+                string json = JsonConvert.SerializeObject(payload);
+                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+                try
                 {
-                    string json = JsonConvert.SerializeObject(payload);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                    HttpResponseMessage res;
-
-                    if (_selectedId == -1) // Create
+                    if (_selectedId == -1) // THÊM MỚI
                     {
-                        res = await client.PostAsync(DungChung.getUrl("QLNhanVien/CreateNhanVien"), content);
+                        response = await client.PostAsync(DungChung.getUrl("QLNhanVien/CreateNhanVien"), content);
                     }
-                    else // Update
+                    else // CẬP NHẬT
                     {
-                        res = await client.PutAsync(DungChung.getUrl($"QLNhanVien/UpdateNhanVien/{_selectedId}"), content);
+                        response = await client.PutAsync(DungChung.getUrl($"QLNhanVien/UpdateNhanVien/{_selectedId}"), content);
                     }
 
-                    if (res.IsSuccessStatusCode)
+                    if (response.IsSuccessStatusCode)
                     {
-                        string msg = _selectedId == -1 ? "Thêm mới thành công!" : "Cập nhật thành công!";
-                        MessageBox.Show(msg, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        LoadData();
+                        MessageBox.Show(_selectedId == -1 ? "Thêm mới thành công!" : "Cập nhật thành công!", "Thông báo");
+                        await LoadData();
                         ResetForm();
                     }
                     else
                     {
-                        var err = await res.Content.ReadAsStringAsync();
-                        // Hiển thị lỗi cụ thể từ Server (VD: Email trùng)
-                        // Parse JSON error nếu server trả về { "message": "..." }
+                        var err = await response.Content.ReadAsStringAsync();
+                        // Parse JSON error message if possible
                         try
                         {
-                            var errObj = JsonConvert.DeserializeObject<dynamic>(err);
+                            dynamic errObj = JsonConvert.DeserializeObject(err);
                             MessageBox.Show("Lỗi: " + errObj.message, "Thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         catch
                         {
-                            MessageBox.Show("Lỗi: " + err, "Thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Có lỗi xảy ra: " + err, "Thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi kết nối: " + ex.Message);
+                }
             }
-            catch (Exception ex) { MessageBox.Show("Lỗi hệ thống: " + ex.Message); }
         }
 
         private async void BtnXoa_Click(object sender, EventArgs e)
         {
             if (_selectedId == -1) return;
 
-            if (MessageBox.Show("Bạn chắc chắn muốn xóa nhân viên này?\nTài khoản sẽ bị vô hiệu hóa.", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            if (MessageBox.Show("Bạn có chắc chắn muốn xóa nhân viên này?", "Xác nhận",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 try
                 {
                     using (HttpClient client = new HttpClient())
                     {
-                        var res = await client.DeleteAsync(DungChung.getUrl($"QLNhanVien/DeleteNhanVien/{_selectedId}"));
-
-                        if (res.IsSuccessStatusCode)
+                        var response = await client.DeleteAsync(DungChung.getUrl($"QLNhanVien/DeleteNhanVien/{_selectedId}"));
+                        if (response.IsSuccessStatusCode)
                         {
-                            MessageBox.Show("Đã xóa nhân viên.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            LoadData();
+                            MessageBox.Show("Xóa thành công!");
+                            await LoadData();
                             ResetForm();
                         }
                         else
                         {
-                            MessageBox.Show("Lỗi xóa: " + await res.Content.ReadAsStringAsync());
+                            MessageBox.Show("Xóa thất bại. Vui lòng thử lại.");
                         }
                     }
                 }
-                catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi: " + ex.Message);
+                }
             }
+        }
+
+        // Helper rút gọn thông báo
+        private void ShowWarning(string msg, Control controlToFocus)
+        {
+            MessageBox.Show(msg, "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            controlToFocus.Focus();
         }
     }
 }
